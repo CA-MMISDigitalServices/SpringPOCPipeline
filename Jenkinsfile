@@ -16,6 +16,7 @@ pipeline {
             post {
                 always {
                     	echo '******************* always'
+			jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
                 }
 		failure {
 			echo '****************** failure'
@@ -23,7 +24,7 @@ pipeline {
 		}
 		success {
 			echo '****************** success'
-			jiraComment body: 'Build Succsessful', issueKey: 'PTP'
+			jiraComment body: 'Build Succsessful', issueKey: 'PTP-26'
 		}
             }
         }
