@@ -31,7 +31,7 @@ pipeline {
         stage('Test') { 
             steps {
                 junit '**/target/surefire-reports/*.xml'
-		step([$class: 'JiraTestResultReporter', 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': 'true', 'autoResolveIssue': 'false', 'autoUnlinkIssue': 'true'])
+		step([$class: 'JiraTestDataPublisher', 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': 'true', 'autoResolveIssue': 'false', 'autoUnlinkIssue': 'true'])
             }
             post {
                 always {
