@@ -31,8 +31,8 @@ pipeline {
         stage('Test') {   
             steps {
 //                junit '**/target/surefire-reports/*.xml', 'testDataPublishers': (['$class': 'JiraTestDataPublisher', 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': 'true', 'autoResolveIssue': 'false', 'autoUnlinkIssue': 'true'])
-		  junit allowEmptyResults: true, healthScaleFactor: 2.0, keepLongStdio: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers : 'JiraTestDataPublisher', 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': 'true', 'autoResolveIssue': 'false', 'autoUnlinkIssue': 'true'
-
+//		  junit allowEmptyResults: true, healthScaleFactor: 2.0, keepLongStdio: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers : 'JiraTestDataPublisher', 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': 'true', 'autoResolveIssue': 'false', 'autoUnlinkIssue': 'true'
+		  junit allowEmptyResults: true, testDataPublishers: [[$class: 'JiraTestDataPublisher', 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': 'true','autoUnlinkIssue': 'true', ]], testResults: '**/target/surefire-reports/*.xml'
 
 	    } 
             post {
