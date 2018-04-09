@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 	environment { 
@@ -36,7 +35,7 @@ pipeline {
 //		  junit allowEmptyResults: true, testDataPublishers: [[$class: 'JiraTestDataPublisher']], 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': true, 'autoResolveIssue': false, 'autoUnlinkIssue': true, ]], testResults: '**/target/surefire-reports/*.xml'
 //                  junit allowEmptyResults: true, testDataPublishers: [[$class: 'JiraTestDataPublisher', 'configs': [], 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': true,'autoResolveIssue': false, 'autoUnlinkIssue': true, ]], testResults: '**/target/surefire-reports/*.xml'
 //		    junit allowEmptyResults: true, testDataPublishers: [[$class: 'JiraTestDataPublisher']], testResults: '**/target/surefire-reports/*.xml'
-		  junit testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': true, 'autoResolveIssue': 'false', 'autoUnlinkIssue': true, 'configs': []]]
+		  junit testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': true, 'autoResolveIssue': false, 'autoUnlinkIssue': true, 'configs': []]]
 
 		  													
 	    }     
