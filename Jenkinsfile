@@ -15,13 +15,15 @@ pipeline {
                 }
             post {
                 always {
-                    echo '******************* always'
+                    	echo '******************* always'
                 }
 		failure {
 			echo '****************** failure'
+			jiraComment body: 'Build Failed', issueKey: 'PTP'
 		}
 		success {
 			echo '****************** success'
+			jiraComment body: 'Build Succsessful', issueKey: 'PTP'
 		}
             }
         }
