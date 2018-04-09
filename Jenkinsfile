@@ -11,7 +11,7 @@ pipeline {
 		}
         stage('Build') {
             steps {
-			sh "'${mvnHome}/bin/mvn' -X -B ---file /var/lib/jenkins/workspace/TestPipeline/SpringPOC -Dmaven.test.failure.ignore clean install"
+			sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC -Dmaven.test.failure.ignore clean install"
                 }
             post {
                 always {
