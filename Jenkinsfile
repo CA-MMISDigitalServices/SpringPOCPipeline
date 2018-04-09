@@ -28,9 +28,9 @@ pipeline {
 		}
             }
         }
-        stage('Test') { 
+        stage('Test') {   
             steps {
-                junit '**/target/surefire-reports/*.xml', ([$class: 'JiraTestDataPublisher', 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': 'true', 'autoResolveIssue': 'false', 'autoUnlinkIssue': 'true'])
+                junit '**/target/surefire-reports/*.xml', 'testDataPublishers': (['$class': 'JiraTestDataPublisher', 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': 'true', 'autoResolveIssue': 'false', 'autoUnlinkIssue': 'true'])
             }
             post {
                 always {
