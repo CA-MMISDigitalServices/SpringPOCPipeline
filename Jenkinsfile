@@ -1,7 +1,7 @@
 pipeline {
     agent any
 	environment { 
-        mvnHome = tool 'apache-maven-3.5.3'
+        mvnHome = tool 'Maven_Config'
     }
     stages {
 		stage('Preparation') {
@@ -11,46 +11,43 @@ pipeline {
 		}
         stage('Build') {
             steps {
-				sh "'${mvnHome}/bin/mvn' -X -B --file D:/Software/Install/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dmaven.test.failure.ignore clean install"
+			sh "'${mvnHome}/bin/mvn' -X -B ---file /var/lib/jenkins/workspace/TestPipeline/SpringPOC -Dmaven.test.failure.ignore clean install"
                 }
             post {
                 always {
                     echo '******************* always'
                 }
-				failure {
-					echo '****************** failure'
-				}
-				success {
-					echo '****************** success'
-				}
+		failure {
+			echo '****************** failure'
+		}
+		success {
+			echo '****************** success'
+		}
             }
         }
         stage('Test') { 
             steps {
-//                sh 'mvn test' 
                 junit '**/target/surefire-reports/*.xml'
-//                junit '\\target\\surefire-reports/*.xml'
-
             }
             post {
                 always {
-                echo 'always'
+                 	echo 'always'
                 }
-				changed {
-					echo 'change'
-				}
-				aborted {
-					echo 'aborted'
-				}
-				failure {
-					echo 'failure'
-				}
-				success {
-					echo 'success'
-				}
-				unstable {
-					echo 'unstable'
-				}
+		changed {
+		 	echo 'change'
+		}
+		aborted {
+			echo 'aborted'
+		}
+		failure {
+			echo 'failure'
+		}
+		success {
+			echo 'success'
+		}
+		unstable {
+			echo 'unstable'
+		}
             }
         }
     }
