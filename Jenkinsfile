@@ -40,7 +40,8 @@ pipeline {
 //junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', configs: [], projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, ]]
 // junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', configs: [[SelectableArrayFields: [], SelectableFields: [], StringArrayFields, [], StringFields: [], UserFields: []]], projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, ]]
 //junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', configs: [], projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true ]]	    													
-	   junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', configs: [[$class: 'StringFields', fieldKey: 'test' , value: 'test']], projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, ]]
+//junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', configs: [[$class: 'StringFields', fieldKey: 'test' , value: 'test']], projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, ]]
+	   junit allowEmptyResults: true, testDataPublishers: [[$class: 'JiraTestDataPublisher', configs: [[$class: 'StringFields', fieldKey: 'test' , value: 'test']], projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, ]], testResults: '**/target/surefire-reports/*.xml'
 
 	      
 	    }     
