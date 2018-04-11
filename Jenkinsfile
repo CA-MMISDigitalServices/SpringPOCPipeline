@@ -29,9 +29,11 @@ pipeline {
 			}
         }
 		stage('JIRA') {
-			withEnv(['JIRA_SITE=https://ca-mmisds.atlassian.net/']) {
-				def issues = jiraJqlSearch jql: 'PROJECT = PTP'
-					echo issues.data.toString()
+			node {
+				withEnv(['JIRA_SITE=https://ca-mmisds.atlassian.net/']) {
+					def issues = jiraJqlSearch jql: 'PROJECT = PTP'
+						echo issues.data.toString()
+				}
 			}
 		}
 
