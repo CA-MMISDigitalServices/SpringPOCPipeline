@@ -29,7 +29,7 @@ pipeline {
 			}
         }
 		stage('JIRA') {
-			node {
+			steps {
 				withEnv(['JIRA_SITE=https://ca-mmisds.atlassian.net/']) {
 					def issues = jiraJqlSearch jql: 'PROJECT = PTP'
 						echo issues.data.toString()
