@@ -11,23 +11,30 @@ pipeline {
 		}
         stage('Build') {
             steps {
-			sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC -Dmaven.test.failure.ignore clean install"
-                }
+				sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC -Dmaven.test.failure.ignore clean install"
+            }
             post {
                 always {
-                    	echo '******************* always'
-			jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
+                    echo '******************* always'
+					jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
                 }
-		failure {
-			echo '****************** failure'
-			jiraComment body: 'Build Failed', issueKey: 'PTP'
-		}
-		success {
-			echo '****************** success'
-			jiraComment body: 'Build Succsessful', issueKey: 'PTP-26'
-		}
-            }
+				failure {
+					echo '****************** failure'
+					jiraComment body: 'Build Failed', issueKey: 'PTP'
+				}
+				success {
+					echo '****************** success'
+					jiraComment body: 'Build Succsessful', issueKey: 'PTP-26'
+				}	
+			}
         }
+		stage('JIRA') {
+			withEnv(['JIRA_SITE=LOCAL']) {
+				def issues = jiraJqlSearch jql: 'PROJECT = TEST'
+					echo issues.data.toString()
+			}
+		}
+
         stage('Test') {   
             steps {
 //                junit '**/target/surefire-reports/*.xml', 'testDataPublishers': (['$class': 'JiraTestDataPublisher', 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': 'true', 'autoResolveIssue': 'false', 'autoUnlinkIssue': 'true'])
@@ -44,8 +51,8 @@ pipeline {
 // junit allowEmptyResults: true, testDataPublishers: [[$class: 'JiraTestDataPublisher', configs: [[$class: 'StringFields', fieldKey: 'test' , value: 'test']], projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, ]], testResults: '**/target/surefire-reports/*.xml'
 //junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, configs: [[$class: 'StringFields', fieldKey:"summary", value: "${DEFAULT_SUMMARY}"]], [[$class: 'StringFields', fieldKey:"description", value: "${DEFAULT_DESCRIPTION}"]] ]]
 //junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, configs: [[$class: 'StringFields', fieldKey:"summary", value: "${DEFAULT_SUMMARY}", $class: 'StringFields', fieldKey:"description", value: "${DEFAULT_DESCRIPTION}"]] ]]
-junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, configs: [[$class: 'StringFields', fieldKey:"summary", value: 'summary', $class: 'StringFields', fieldKey:"description", value: 'description']] ]]
-
+//junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, configs: [[$class: 'StringFields', fieldKey:"summary", value: 'summary', $class: 'StringFields', fieldKey:"description", value: 'description']] ]]
+				junit '**/target/surefire-reports/*.xml'
 	      
 	    }     
             post {
