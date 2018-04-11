@@ -28,15 +28,16 @@ pipeline {
 				}	
 			}
         }
-		stage('JIRA') {
-			steps {
-				withEnv(['JIRA_SITE=https://ca-mmisds.atlassian.net/']) {
-					def issues = jiraJqlSearch jql: 'PROJECT = PTP'
-						echo issues.data.toString()
+		Node {
+			stage('JIRA') {
+				steps {
+					withEnv(['JIRA_SITE=https://ca-mmisds.atlassian.net/']) {
+						def issues = jiraJqlSearch jql: 'PROJECT = PTP'
+							echo issues.data.toString()
+					}
 				}
 			}
 		}
-
         stage('Test') {   
             steps {
 //                junit '**/target/surefire-reports/*.xml', 'testDataPublishers': (['$class': 'JiraTestDataPublisher', 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': 'true', 'autoResolveIssue': 'false', 'autoUnlinkIssue': 'true'])
