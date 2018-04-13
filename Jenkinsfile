@@ -28,7 +28,7 @@ pipeline {
 				}	
 			}
         }
-        stage("robot test") {
+        stage('robot test') {
         	steps {
         		node('master') {
   				 	script {
@@ -64,13 +64,13 @@ pipeline {
 				'-Dsonar.projectBaseDir=/var/lib/jenkins/workspace/TestPipeline'
 			}
 		}
-    	stage("SonarQube Quality Gate") { 
+    	stage('SonarQube Quality Gate') { 
 			steps {
-				node('master){ 
+				node('master'){ 
 					script {
 						timeout(time: 1, unit: 'HOURS') { 
-						qg = waitForQualityGate() 
-						if (qg.status != 'OK') {
+							qg = waitForQualityGate() 
+							if (qg.status != 'OK') {
 							error "Pipeline aborted due to quality gate failure: ${qg.status}"
 						}
 					}
@@ -104,3 +104,6 @@ pipeline {
         }
  	}
  }
+
+ 
+ cd2b9ab558ad6915ec42e1214ff96cc36ae0cf7e
