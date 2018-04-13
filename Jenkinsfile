@@ -1,10 +1,10 @@
 pipeline {
     agent any
-	environment { 
+    environment { 
         mvnHome = tool 'Maven_Config' 
     }
     stages {
-		stage('Preparation') {
+    	stage('Preparation') {
 			steps {
 				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'master'
 			}
@@ -28,56 +28,79 @@ pipeline {
 				}	
 			}
         }
-		Node {
-			stage('JIRA') {
-				steps {
-					withEnv(['JIRA_SITE=https://ca-mmisds.atlassian.net/']) {
-						def issues = jiraJqlSearch jql: 'PROJECT = PTP'
-							echo issues.data.toString()
+        stage("robot test") {
+        	steps {
+        		node('master') {
+  				 	script {
+                    	MYLIST = []
+                    	MYLIST += "param-one"
+                    	MYLIST += "param-two"
+                    	MYLIST += "param-three"
+                    	MYLIST += "param-four"
+                    	MYLIST += "param-five"
+                    
+                   		 MRSTR = jiraJqlSearch jql: 'PROJECT = PTP', auditLog: true, site: 'CAMMIS'
+                    
+                    	echo MRSTR.data.toString()
+	
+						for (def element = 0; element < MYLIST.size(); element++) {
+				
+							echo MYLIST[element]  
+                        
+               			}
+				 	}
+				}   
+        	}
+    	}
+    	stage('SonarQube analysis') { 
+    		steps { { 
+				sh '/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/SonarQubeScanner/bin/sonar-scanner' +
+				'-Dsonar.host.url=http://158.96.16.211:9000/' + 
+				'-Dsonar.projectVersion=1.0' +
+				'-Dsonar.sourceEncoding=UTF-8' +
+				'-Dsonar.projectKey=TestPipeline' +
+				'-Dsonar.java.binaries=/var/lib/jenkins/workspace/TestPipeline/SpringPOC/target/classes' +
+				'-Dsonar.sources=TestPipeline/src' +
+				'-Dsonar.projectBaseDir=/var/lib/jenkins/workspace/TestPipeline'
+			}
+		}
+    	stage("SonarQube Quality Gate") { 
+			steps {
+				node('master){ 
+					script {
+						timeout(time: 1, unit: 'HOURS') { 
+						qg = waitForQualityGate() 
+						if (qg.status != 'OK') {
+							error "Pipeline aborted due to quality gate failure: ${qg.status}"
+						}
 					}
 				}
 			}
 		}
-        stage('Test') {   
+		stage('Test') {   
             steps {
-//                junit '**/target/surefire-reports/*.xml', 'testDataPublishers': (['$class': 'JiraTestDataPublisher', 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': 'true', 'autoResolveIssue': 'false', 'autoUnlinkIssue': 'true'])
-//		  junit allowEmptyResults: true, healthScaleFactor: 2.0, keepLongStdio: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers : 'JiraTestDataPublisher', 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': 'true', 'autoResolveIssue': 'false', 'autoUnlinkIssue': 'true'
-//		  junit allowEmptyResults: true, testDataPublishers: [[$class: 'JiraTestDataPublisher']], 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': true, 'autoResolveIssue': false, 'autoUnlinkIssue': true, ]], testResults: '**/target/surefire-reports/*.xml'
-//                  junit allowEmptyResults: true, testDataPublishers: [[$class: 'JiraTestDataPublisher', 'configs': [], 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': true,'autoResolveIssue': false, 'autoUnlinkIssue': true, ]], testResults: '**/target/surefire-reports/*.xml'
-//		    junit allowEmptyResults: true, testDataPublishers: [[$class: 'JiraTestDataPublisher']], testResults: '**/target/surefire-reports/*.xml'
-//		  junit testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': true, 'autoResolveIssue': false, 'autoUnlinkIssue': true, 'configs': []]]
-//junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', 'configs': [], 'projectKey': 'PTP', 'issueType': 'Bug', 'autoRaiseIssue': true, 'autoResolveIssue': false, 'autoUnlinkIssue': true, ]]
-//junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', configs: [], projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, ]]
-// junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', configs: [[SelectableArrayFields: [], SelectableFields: [], StringArrayFields, [], StringFields: [], UserFields: []]], projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, ]]
-//junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', configs: [], projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true ]]	    													
-//junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', configs: [[$class: 'StringFields', fieldKey: 'test' , value: 'test']], projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, ]]
-// junit allowEmptyResults: true, testDataPublishers: [[$class: 'JiraTestDataPublisher', configs: [[$class: 'StringFields', fieldKey: 'test' , value: 'test']], projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, ]], testResults: '**/target/surefire-reports/*.xml'
-//junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, configs: [[$class: 'StringFields', fieldKey:"summary", value: "${DEFAULT_SUMMARY}"]], [[$class: 'StringFields', fieldKey:"description", value: "${DEFAULT_DESCRIPTION}"]] ]]
-//junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, configs: [[$class: 'StringFields', fieldKey:"summary", value: "${DEFAULT_SUMMARY}", $class: 'StringFields', fieldKey:"description", value: "${DEFAULT_DESCRIPTION}"]] ]]
-//junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml', testDataPublishers: [[$class: 'JiraTestDataPublisher', projectKey: 'PTP', issueType: 'Bug', autoRaiseIssue: true, autoResolveIssue: false, autoUnlinkIssue: true, configs: [[$class: 'StringFields', fieldKey:"summary", value: 'summary', $class: 'StringFields', fieldKey:"description", value: 'description']] ]]
 				junit '**/target/surefire-reports/*.xml'
-	      
-	    }     
-            post {
-                always {
+	    	}     
+        	post {
+				always {
                  	echo 'always'
                 }
-		changed {
-		 	echo 'change'
-		}
-		aborted {
-			echo 'aborted'
-		}
-		failure {
-			echo 'failure'
-		}
-		success {
-			echo 'success'
-		}
-		unstable {
-			echo 'unstable'
-		}
+				changed {
+		 			echo 'change'
+				}
+				aborted {
+					echo 'aborted'
+				}
+				failure {
+					echo 'failure'
+				}
+				success {
+					echo 'success'
+				}
+				unstable {
+					echo 'unstable'
+				}
             }
         }
-    }
-}
+ 	}
+ }
