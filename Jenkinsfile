@@ -73,9 +73,7 @@ pipeline {
 						timeout(time: 1, unit: 'HOURS') { 
 							echo '************ Inside Quality Gate'
 							qg = waitForQualityGate() 
-							echo '************ Inside Quality Gate - after wait For Quality Gate'
 							if (qg.status != 'OK') {
-								echo '************ Inside Quality Gate-error'
 								error "Pipeline aborted due to quality gate failure: ${qg.status}"
 							}
 						}
