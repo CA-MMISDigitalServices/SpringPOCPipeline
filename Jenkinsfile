@@ -53,7 +53,7 @@ pipeline {
         	}
     	}
     	stage('SonarQube analysis') { 
-    		steps { { 
+    		steps { 
 				sh '/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/SonarQubeScanner/bin/sonar-scanner' +
 				'-Dsonar.host.url=http://158.96.16.211:9000/' + 
 				'-Dsonar.projectVersion=1.0' +
