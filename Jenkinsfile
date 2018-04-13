@@ -60,7 +60,7 @@ pipeline {
 				' -Dsonar.sourceEncoding=UTF-8' +
 				' -Dsonar.projectKey=TestPipeline' +
 				' -Dsonar.java.binaries=/var/lib/jenkins/workspace/TestPipeline/SpringPOC/target/classes' +
-				' -Dsonar.sources=TestPipeline/src' +
+				' -Dsonar.sources=SpringPOC/src' +
 				' -Dsonar.projectBaseDir=/var/lib/jenkins/workspace/TestPipeline'
 			}
 		}
