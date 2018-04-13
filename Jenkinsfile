@@ -41,7 +41,7 @@ pipeline {
                     
                    		 MRSTR = jiraJqlSearch jql: 'PROJECT = PTP', auditLog: true, site: 'CAMMIS'
                     
-                    	echo MRSTR.data.toString()
+//                    	echo MRSTR.data.toString()
 	
 						for (def element = 0; element < MYLIST.size(); element++) {
 				
