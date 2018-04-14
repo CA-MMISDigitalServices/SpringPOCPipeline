@@ -72,10 +72,10 @@ pipeline {
 					script {
 						timeout(time: 1, unit: 'HOURS') { 
 							echo '************ Inside Quality Gate'
-							qg = waitForQualityGate() 
-							echo qg.data.toString() 
-//					if (qg.status != 'OK') {
-//						error "Pipeline aborted due to quality gate failure: ${qg.status}"
+							qualityGate = waitForQualityGate() 
+							echo qualityGate.status.toString() 
+//					if (qualityGate.status != 'OK') {
+//						error "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
 //							}
 						}
 					}
