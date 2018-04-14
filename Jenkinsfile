@@ -11,7 +11,7 @@ pipeline {
 		}
         stage('Build') {
             steps {
-				sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC -Dmaven.test.failure.ignore clean install"
+				sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC -Dmaven.test.failure.ignore clean install cobertura:cobertura -Dcobertura.report.format=xml"
             }
             post {
                 always {
@@ -82,7 +82,7 @@ pipeline {
 				}
 			}
 		}
-		stage('Test') {   
+		stage('Unit Test Report') {   
             steps {
 				junit '**/target/surefire-reports/*.xml'
 	    	}     
@@ -107,5 +107,12 @@ pipeline {
 				}
             }
         }
+		}
+		stage('Code Coverage Report') {   
+            steps {
+				cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: '**/target/site/cobertura/coverage.xml', conditionalCoverageTargets: '70, 0, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '80, 0, 0', maxNumberOfBuilds: 0, methodCoverageTargets: '80, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+
+			
+	    	}  
  	}
  }
