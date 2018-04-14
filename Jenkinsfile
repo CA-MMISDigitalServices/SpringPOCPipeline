@@ -145,5 +145,21 @@ pipeline {
 				}	
 			}
 		}
+		stage('Nexus Snapshot Upload') {   
+            steps {
+				nexusArtifactUploader artifacts: [[artifactId: 'SpringPOC', classifier: '', file: '/var/lib/jenkins/workspace/TestPipeline/SpringPOC/target/springpoc-1.0.0-BUILD-SNAPSHOT.war', type: 'war']], credentialsId: 'Admin', groupId: 'CA-MMIS.jenkins.ci.SpringPOC', nexusUrl: '158.96.16.218:8081', nexusVersion: 'nexus2', protocol: 'http', repository: 'http://158.96.16.218:8081/nexus/content/repositories/snapshots/', version: '${BUILD_NUMBER}' 
+	    	}
+			post {
+                always {
+                    echo 'Nexus Snapshot Upload  Done'
+                }
+				failure {
+					echo 'Nexus Snapshot Upload  failure'
+				}
+				success {
+					echo 'Nexus Snapshot Upload Success'
+				}	
+			}
+		}
  	}
  }
