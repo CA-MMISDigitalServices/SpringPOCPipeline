@@ -67,10 +67,10 @@ pipeline {
 			}
 			post {
                 always {
-                    echo SonarQube Analysis  Done'
+                    echo 'SonarQube Analysis  Done'
                 }
 				failure {
-					echo SonarQube Analysis  failure'
+					echo 'SonarQube Analysis  failure'
 				}
 				success {
 					echo 'SonarQube Analysis Success'
@@ -94,10 +94,10 @@ pipeline {
 			}
 			post {
                 always {
-                    echo SonarQube Quality Gate  Done'
+                    echo 'SonarQube Quality Gate  Done'
                 }
 				failure {
-					echo SonarQube Quality Gate  failure'
+					echo 'SonarQube Quality Gate  failure'
 				}
 				success {
 					echo 'SonarQube Quality Gate Success'
@@ -135,10 +135,10 @@ pipeline {
 	    	}
 			post {
                 always {
-                    echo Code Coverage Report  Done'
+                    echo 'Code Coverage Report  Done'
                 }
 				failure {
-					echo Code Coverage Report  failure'
+					echo 'Code Coverage Report  failure'
 				}
 				success {
 					echo 'Code Coverage Report Success'
