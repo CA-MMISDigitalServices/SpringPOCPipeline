@@ -6,7 +6,7 @@ pipeline {
     stages {
     	stage('Preparation') {
 			steps {
-				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'errorTest'
+				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'master'
 			}
 		}
         stage('Build') {
@@ -28,6 +28,7 @@ pipeline {
 						testIssue = [fields: [ project: [key: 'PTP'],
 									summary: 'Jenkins Build Failure.',
 									description: "Jenkins Build Failure -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+									priority: [name: 'Highest'],
 									issuetype: [name: 'Bug']]]
 
 						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
@@ -43,18 +44,6 @@ pipeline {
 					echo '****************** success'
 //					jiraComment body: 'Build Succsessful', issueKey: 'PTP-26'
 //					slackSend (color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-
-					script {
-						testIssue = [fields: [ project: [key: 'PTP'],
-									summary: 'New JIRA Created from Jenkins.',
-									description: 'New JIRA Created from Jenkins.',
-									issuetype: [name: 'Bug']]]
-
-						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
-
-						echo response.successful.toString()
-						echo response.data.toString()
-					}
 				}	
 			}
         }
