@@ -6,7 +6,7 @@ pipeline {
     stages {
     	stage('Preparation') {
 			steps {
-				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'master'
+				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'errorTest'
 			}
 		}
         stage('Build') {
