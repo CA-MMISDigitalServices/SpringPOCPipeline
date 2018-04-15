@@ -27,7 +27,7 @@ pipeline {
 					script {
 						testIssue = [fields: [ project: [key: 'PTP'],
 									summary: 'New JIRA Created from Jenkins.',
-									description: 'Jenkins Build Failure ${env.JOB_NAME} - ${env.BUILD_NUMBER} ${env.BUILD_URL}- ',
+									description: "Jenkins Build Failure '${env.JOB_NAME} - ${env.BUILD_NUMBER} ${env.BUILD_URL}'",
 									issuetype: [name: 'Bug']]]
 
 						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
