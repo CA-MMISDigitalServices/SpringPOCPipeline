@@ -191,9 +191,8 @@ pipeline {
 				script {
 					gitScm = git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'master'
   
-					step([$class: 'JiraIssueUpdater', 
-						issueSelector: [$class: 'DefaultIssueSelector'], 
-						scm: gitScm])            
+//					step([$class: 'JiraIssueUpdater', 
+					JiraIssueUpdater issueSelector: [$class: 'DefaultIssueSelector'], scm: gitScm])            
 					gitScm = null
 				}
 			}
