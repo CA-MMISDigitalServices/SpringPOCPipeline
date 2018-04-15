@@ -181,5 +181,10 @@ pipeline {
 //				}	
 //			}
 //		}
+//		stage('Deploy') {
+//            steps {
+//				sh "'${mvnHome}/bin/mvn' -X -B --file D:/Software/Install/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dmaven.test.failure.ignore deploy"
+//                }
+//        }
  	}
  }
