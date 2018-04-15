@@ -26,8 +26,8 @@ pipeline {
 //					jiraComment body: 'Build Failed', issueKey: 'PTP'
 					script {
 						testIssue = [fields: [ project: [key: 'PTP'],
-									summary: 'New JIRA Created from Jenkins.',
-									description: "Jenkins Build Failure '${env.JOB_NAME} - ${env.BUILD_NUMBER} ${env.BUILD_URL}'",
+									summary: 'Jenkins Build Failure.',
+									description: "Jenkins Build Failure -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
 									issuetype: [name: 'Bug']]]
 
 						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
