@@ -26,14 +26,12 @@ pipeline {
 					echo '****************** success'
 					jiraComment body: 'Build Succsessful', issueKey: 'PTP-26'
 					script {
-						testIssue = [fields: [ // id or key must present for project.
-                               project: [key: 'PTP'],
-                               summary: 'New JIRA Created from Jenkins.',
-                               description: 'New JIRA Created from Jenkins.',
-                               // id or name must present for issuetype.
-                               issuetype: [id: '3']]]
+						testIssue = [fields: [ project: [key: 'RFC'],
+									summary: 'New JIRA Created from Jenkins.',
+									description: 'New JIRA Created from Jenkins.',
+									issuetype: [id: '3']]]
 
-						response = jiraEditIssue idOrKey: 'TEST-01', issue: testIssue
+						response = jiraNewIssue issue: testIssue, site: 'CAMMMIS'
 
 						echo response.successful.toString()
 						echo response.data.toString()
