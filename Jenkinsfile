@@ -186,9 +186,9 @@ pipeline {
 //				sh "'${mvnHome}/bin/mvn' -X -B --file D:/Software/Install/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dmaven.test.failure.ignore deploy"
 //                }
 //        }
-		stage('Jira Update Issues") {
+		stage('Jira Update Issues') {
 			steps {
-				gitScm = git url: 'git@github.com:jenkinsci/jira-plugin.git', branch: 'master'
+				gitScm = git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'master'
   
 				step([$class: 'hudson.plugins.jira.JiraIssueUpdater', 
 					issueSelector: [$class: 'hudson.plugins.jira.selector.DefaultIssueSelector'], 
