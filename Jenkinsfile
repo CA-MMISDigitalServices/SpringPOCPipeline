@@ -6,25 +6,44 @@ pipeline {
     stages {
     	stage('Preparation') {
 			steps {
-				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'master'
+				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'errorTest'
 			}
 		}
         stage('Build') {
             steps {
+			
+//				slackSend (color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+
 				sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC -Dmaven.test.failure.ignore clean install cobertura:cobertura -Dcobertura.report.format=xml"
             }
             post {
                 always {
                     echo '******************* always'
-					jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
+//					jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
                 }
 				failure {
 					echo '****************** failure'
-					jiraComment body: 'Build Failed', issueKey: 'PTP'
+//					jiraComment body: 'Build Failed', issueKey: 'PTP'
+					script {
+						testIssue = [fields: [ project: [key: 'PTP'],
+									summary: 'New JIRA Created from Jenkins.',
+									description: 'Jenkins Build Failure ${env.JOB_NAME} - ${env.BUILD_NUMBER} ${env.BUILD_URL}- ',
+									issuetype: [name: 'Bug']]]
+
+						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+						echo response.successful.toString()
+						echo response.data.toString()
+						
+//						slackSend (color: '#FFFF00', message: "Failed: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+
+					}
 				}
 				success {
 					echo '****************** success'
-					jiraComment body: 'Build Succsessful', issueKey: 'PTP-26'
+//					jiraComment body: 'Build Succsessful', issueKey: 'PTP-26'
+//					slackSend (color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+
 					script {
 						testIssue = [fields: [ project: [key: 'PTP'],
 									summary: 'New JIRA Created from Jenkins.',
