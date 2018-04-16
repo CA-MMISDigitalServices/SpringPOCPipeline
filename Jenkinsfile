@@ -12,7 +12,7 @@ pipeline {
         stage('Build') {
             steps {
 			
-//				slackSend (color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+				slackSend (color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 
 				sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC -Dmaven.test.failure.ignore clean install cobertura:cobertura -Dcobertura.report.format=xml"
             }
@@ -186,16 +186,16 @@ pipeline {
 //				sh "'${mvnHome}/bin/mvn' -X -B --file D:/Software/Install/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dmaven.test.failure.ignore deploy"
 //                }
 //        }
-		stage('Jira Update Issues') {
-			steps {
-				script {
-					gitScm = git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'master'
-  
+//		stage('Jira Update Issues') {
+//			steps {
+//				script {
+//					gitScm = git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'master'
+// 
 //					step([$class: 'JiraIssueUpdater', 
-					JiraIssueUpdater issueSelector: [$class: 'DefaultIssueSelector'], scm: gitScm])            
-					gitScm = null
-				}
-			}
-		}
+//					JiraIssueUpdater issueSelector: [$class: 'DefaultIssueSelector'], scm: gitScm])            
+//					gitScm = null
+//				}
+//			}
+//		}
  	}
  }
