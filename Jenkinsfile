@@ -9,11 +9,13 @@ pipeline {
 				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'master'
 			}
 		}
+		stage('Starting Build') {
+            steps {
+				slackSend (color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+			}
+		}
         stage('Build') {
             steps {
-			
-				slackSend (color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-
 				sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC -Dmaven.test.failure.ignore clean install cobertura:cobertura -Dcobertura.report.format=xml"
             }
             post {
