@@ -6,7 +6,7 @@ pipeline {
     stages {
     	stage('Preparation') {
 			steps {
-				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'master'
+				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'errortest'
 			}
 		}
 		stage('Starting Build') {
@@ -182,8 +182,6 @@ pipeline {
 		}
 		stage('Nexus Release Upload') {   
 			steps {
-//				nexusArtifactUploader artifacts: [[artifactId: 'SpringPOC', classifier: '', file: '/var/lib/jenkins/workspace/TestPipeline/SpringPOC/target/springpoc-1.0.0-BUILD-SNAPSHOT.war', type: 'war']], credentialsId: 'Admin', groupId: 'CA-MMIS.jenkins.ci.SpringPOC', nexusUrl: '158.96.16.218:8081', nexusVersion: 'nexus2', protocol: 'http', repository: 'http://158.96.16.218:8081/nexus/content/repositories/snapshots/', version: '${BUILD_NUMBER}' 
-//	    	    nexusPublisher nexusInstanceId: 'localNexus', nexusRepositoryId: 'releases', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: 'debug', extension: '', filePath: '/var/lib/jenkins/workspace/TestPipeline/SpringPOC/target/springpoc-1.0.0-BUILD-SNAPSHOT.war']], mavenCoordinate: [artifactId: 'SpringPOC', groupId: 'CA-MMIS.jenkins.ci.SpringPOC', packaging: 'war', version: '${BUILD_NUMBER}']]]
 				
 				step([$class: 'NexusPublisherBuildStep', 
 						nexusInstanceId: 'NexusDemoServer', nexusRepositoryId: 'releases', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: '/var/lib/jenkins/workspace/SpringPOC/SpringPOC/target/springpoc-1.0.0-BUILD-SNAPSHOT.war']], 
@@ -191,29 +189,29 @@ pipeline {
 			}
 			post {
                 always {
-                   echo 'Nexus Snapshot Upload  Done'
+                   echo 'Nexus Nexus Release Upload  Done'
                 }
 				failure {
-					echo 'Nexus Snapshot Upload  failure'
+					echo 'Nexus Nexus Release Upload failure'
 				}
 				success {
-					echo 'Nexus Snapshot Upload Success'
+					echo 'Nexus Nexus Release Upload Success'
 				}	
 			}
 		}
-//		stage('Deploy') {
+//		stage('Maven Nexus Deploy') {
 //          steps {
-//				sh "'${mvnHome}/bin/mvn' -X -B --file D:/Software/Install/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dmaven.test.failure.ignore deploy"
+//				sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dmaven.test.failure.ignore deploy"
 //            }
 //       	  post {
 //                always {
-//                   echo 'Nexus Snapshot Upload  Done'
+//                   echo 'Maven Nexus Deploy  Done'
 //                }
 //				failure {
-//					echo 'Nexus Snapshot Upload  failure'
+//					echo 'Maven Nexus Deploy  failure'
 //				}
 //				success {
-//					echo 'Nexus Snapshot Upload Success'
+//					echo 'Maven Nexus Deploy Success'
 //				}	
 //			}
 		stage('Jira Update Issues') {
@@ -291,7 +289,7 @@ pipeline {
 				}
 				success {
 					echo 'AWS Code Deploy Success'
-					slackSend (color: '#00FF00', message: "Code deploy SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+					slackSend (color: '#00FF00', message: "Code Deploy SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 				}
 			}		
 		}
