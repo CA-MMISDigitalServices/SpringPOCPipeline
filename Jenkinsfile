@@ -219,6 +219,7 @@ pipeline {
 					}
 					success {
 						echo 'Nexus Snapshot Upload Success'
+					}
 				}					
 			}
 		}
