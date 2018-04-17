@@ -210,17 +210,17 @@ pipeline {
 					issueSelector: [$class: 'hudson.plugins.jira.selector.DefaultIssueSelector'], 
 					scm: [$class: 'GitSCM', branches: [[name: '*/master']], 
 					userRemoteConfigs: [[url: 'https://github.com/CA-MMISDigitalServices/Dev.git']]]])
-				post {
-                	always {
-						echo 'Jira Update Issues'
-                	}	
-					failure {
-						echo 'Nexus Snapshot Upload  failure'
-					}
-					success {
-						echo 'Nexus Snapshot Upload Success'
-					}
-				}					
+//				post {
+//                	always {
+//						echo 'Jira Update Issues'
+//                	}	
+//					failure {
+//						echo 'Nexus Snapshot Upload  failure'
+//					}
+//					success {
+//						echo 'Nexus Snapshot Upload Success'
+//					}
+//				}					
 			}
 		}
  	}
