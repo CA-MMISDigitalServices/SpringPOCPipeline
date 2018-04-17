@@ -107,6 +107,20 @@ pipeline {
 							qualityGate = waitForQualityGate() 
 							echo qualityGate.status.toString() 
 							if (qualityGate.status != 'OK') {
+							
+								testIssue = [fields: [ project: [key: 'PTP'],
+									summary: 'Jenkins Build Failure.',
+									description: "Jenkins Build Sonar Quality Gate Failure -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+									priority: [name: 'Highest'],
+									issuetype: [name: 'Bug']]]
+
+								response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+								echo response.successful.toString()
+								echo response.data.toString()
+						
+								slackSend (color: '#FFFF00', message: "Failed: Job - Sonar Quality Gate Failure '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+								// Fail the build
 								error "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
 							}
 						}
@@ -195,7 +209,17 @@ pipeline {
 				step([$class: 'hudson.plugins.jira.JiraIssueUpdater', 
 					issueSelector: [$class: 'hudson.plugins.jira.selector.DefaultIssueSelector'], 
 					scm: [$class: 'GitSCM', branches: [[name: '*/master']], 
-					userRemoteConfigs: [[url: 'https://github.com/CA-MMISDigitalServices/Dev.git']]]])	
+					userRemoteConfigs: [[url: 'https://github.com/CA-MMISDigitalServices/Dev.git']]]])
+				post {
+                	always {
+						echo 'Jira Update Issues'
+                	}	
+					failure {
+						echo 'Nexus Snapshot Upload  failure'
+					}
+					success {
+						echo 'Nexus Snapshot Upload Success'
+				}					
 			}
 		}
  	}
