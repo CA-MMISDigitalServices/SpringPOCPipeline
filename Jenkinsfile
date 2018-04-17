@@ -188,8 +188,8 @@ pipeline {
 //				sh "'${mvnHome}/bin/mvn' -X -B --file D:/Software/Install/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dmaven.test.failure.ignore deploy"
 //                }
 //        }
-//		stage('Jira Update Issues') {
-//			steps {
+		stage('Jira Update Issues') {
+			steps {
 				echo 'Jira Update Issues'
 				
 				step([$class: 'hudson.plugins.jira.JiraIssueUpdater', 
