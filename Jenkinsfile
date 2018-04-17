@@ -190,14 +190,13 @@ pipeline {
 //        }
 //		stage('Jira Update Issues') {
 //			steps {
-//				script {
-//					gitScm = git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'master'
-// 
-//					step([$class: 'JiraIssueUpdater', 
-//					JiraIssueUpdater issueSelector: [$class: 'DefaultIssueSelector'], scm: gitScm])            
-//					gitScm = null
-//				}
-//			}
-//		}
+				echo 'Jira Update Issues'
+				
+				step([$class: 'hudson.plugins.jira.JiraIssueUpdater', 
+					issueSelector: [$class: 'hudson.plugins.jira.selector.DefaultIssueSelector'], 
+					scm: [$class: 'GitSCM', branches: [[name: '*/master']], 
+					userRemoteConfigs: [[url: 'https://github.com/CA-MMISDigitalServices/Dev.git']]]])	
+			}
+		}
  	}
  }
