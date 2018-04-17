@@ -234,5 +234,45 @@ pipeline {
 				}
 			}		
 		}
+		stage('AWS Code Deploy') {
+			steps {
+				echo 'AWS Code Deploy'
+				
+				step([$class: 'AWSCodeDeployPublisher', 
+						applicationName: 'SpringPOC', 
+						awsAccessKey: 'AKIAL7NDHY34EEWS7JGQ', 
+						awsSecretKey: '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', 
+						credentials: 'awsAccessKey', 
+						deploymentConfig: 'CodeDeployDefault.OneAtATime', 
+						deploymentGroupAppspec: false, 
+						deploymentGroupName: 'SpringPOCDG', 
+						deploymentMethod: 'deploy', 
+						excludes: '', 
+						iamRoleArn: '', 
+						includes: '**', 
+						pollingFreqSec: 15, 
+						pollingTimeoutSec: 300, 
+						proxyHost: '', 
+						proxyPort: 0, 
+						region: 'us-gov-west-1', 
+						s3bucket: 'codedeploybucket', 
+						s3prefix: '', 
+						subdirectory: 'SpringPOC', 
+						versionFileName: '', 
+						waitForCompletion: true])
+			
+			}
+			post {
+                always {
+					echo 'AWS Code Deploy'
+                }	
+				failure {
+					echo 'AWS Code Deploy  failure'
+				}
+				success {
+					echo 'AWS Code Deploy Success'
+				}
+			}		
+		}
  	}
  }
