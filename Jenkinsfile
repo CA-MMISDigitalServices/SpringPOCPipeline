@@ -198,10 +198,20 @@ pipeline {
 //			}
 //		}
 //		stage('Deploy') {
-//            steps {
+//          steps {
 //				sh "'${mvnHome}/bin/mvn' -X -B --file D:/Software/Install/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dmaven.test.failure.ignore deploy"
+//            }
+//       	  post {
+//                always {
+//                   echo 'Nexus Snapshot Upload  Done'
 //                }
-//        }
+//				failure {
+//					echo 'Nexus Snapshot Upload  failure'
+//				}
+//				success {
+//					echo 'Nexus Snapshot Upload Success'
+//				}	
+//			}
 		stage('Jira Update Issues') {
 			steps {
 				echo 'Jira Update Issues'
@@ -210,18 +220,19 @@ pipeline {
 					issueSelector: [$class: 'hudson.plugins.jira.selector.DefaultIssueSelector'], 
 					scm: [$class: 'GitSCM', branches: [[name: '*/master']], 
 					userRemoteConfigs: [[url: 'https://github.com/CA-MMISDigitalServices/Dev.git']]]])
-//				post {
-//                	always {
-//						echo 'Jira Update Issues'
-//                	}	
-//					failure {
-//						echo 'Nexus Snapshot Upload  failure'
-//					}
-//					success {
-//						echo 'Nexus Snapshot Upload Success'
-//					}
-//				}					
+			
 			}
+			post {
+                always {
+					echo 'Jira Update Issues'
+                }	
+				failure {
+					echo 'Jira Update Issues  failure'
+				}
+				success {
+					echo 'Jira Update Issues Success'
+				}
+			}		
 		}
  	}
  }
