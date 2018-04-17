@@ -49,30 +49,30 @@ pipeline {
 				}	
 			}
         }
-        stage('robot test') {
-        	steps {
-        		node('master') {
-  				 	script {
-                    	MYLIST = []
-                    	MYLIST += "param-one"
-                    	MYLIST += "param-two"
-                    	MYLIST += "param-three"
-                    	MYLIST += "param-four"
-                    	MYLIST += "param-five"
-                    
-                   		 MRSTR = jiraJqlSearch jql: 'PROJECT = PTP', auditLog: true, site: 'CAMMIS'
-                    
+//        stage('robot test') {
+//        	steps {
+//        		node('master') {
+//  				 	script {
+//                    	MYLIST = []
+//                    	MYLIST += "param-one"
+//                    	MYLIST += "param-two"
+//                    	MYLIST += "param-three"
+//                    	MYLIST += "param-four"
+//                    	MYLIST += "param-five"
+//                    
+//                   		 MRSTR = jiraJqlSearch jql: 'PROJECT = PTP', auditLog: true, site: 'CAMMIS'
+//                    
 //                    	echo MRSTR.data.toString()
-	
-						for (def element = 0; element < MYLIST.size(); element++) {
-				
-							echo MYLIST[element]  
-                        
-               			}
-				 	}
-				}   
-        	}
-    	}
+//	
+//						for (def element = 0; element < MYLIST.size(); element++) {
+//				
+//							echo MYLIST[element]  
+//                        
+//               			}
+//				 	}
+//				}   
+//        	}
+//    	}
     	stage('SonarQube analysis') { 
     		steps { 
 				withSonarQubeEnv('SonarQubeServer') {
@@ -199,22 +199,48 @@ pipeline {
 				}	
 			}
 		}
-		stage('Maven Nexus Deploy') {
+		stage('Nexus Snapshot Upload') {   
 			steps {
-				sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dmaven.test.failure.ignore deploy"
-            }
+				nexusArtifactUploader artifacts: [[artifactId: 'SpringPOC-war', 
+				classifier: '', 
+				file: '/var/lib/jenkins/workspace/SpringPOC/SpringPOC/target/springpoc-1.0.0-BUILD-SNAPSHOT.war', 
+				type: 'war']], 
+				credentialsId: 'Admin', 
+				groupId: 'CA-MMIS.jenkins.ci.SpringPOC', 
+				nexusUrl: 'http://158.96.16.218:8081/nexus', 
+				nexusVersion: 'nexus2', 
+				protocol: 'http', 
+				repository: 'http://158.96.16.218:8081/nexus/content/repositories/snapshots/', 
+				version: '${BUILD_NUMBER}'
+			}
 			post {
                 always {
-                   echo 'Maven Nexus Deploy  Done'
+                   echo 'Nexus Nexus Release Upload  Done'
                 }
 				failure {
-					echo 'Maven Nexus Deploy  failure'
+					echo 'Nexus Nexus Release Upload failure'
 				}
 				success {
-					echo 'Maven Nexus Deploy Success'
+					echo 'Nexus Nexus Release Upload Success'
 				}	
 			}
 		}
+//		stage('Maven Nexus Deploy') {
+//			steps {
+//				sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dmaven.test.failure.ignore deploy"
+//            }
+//			post {
+//                always {
+//                   echo 'Maven Nexus Deploy  Done'
+//                }
+//				failure {
+//					echo 'Maven Nexus Deploy  failure'
+//				}
+//				success {
+//					echo 'Maven Nexus Deploy Success'
+//				}	
+//			}
+//		}
 		stage('Jira Update Issues') {
 			steps {
 				echo 'Jira Update Issues'
