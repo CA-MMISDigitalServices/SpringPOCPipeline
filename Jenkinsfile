@@ -199,21 +199,22 @@ pipeline {
 				}	
 			}
 		}
-//		stage('Maven Nexus Deploy') {
-//          steps {
-//				sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dmaven.test.failure.ignore deploy"
-//            }
-//       	  post {
-//                always {
-//                   echo 'Maven Nexus Deploy  Done'
-//                }
-//				failure {
-//					echo 'Maven Nexus Deploy  failure'
-//				}
-//				success {
-//					echo 'Maven Nexus Deploy Success'
-//				}	
-//			}
+		stage('Maven Nexus Deploy') {
+			steps {
+				sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dmaven.test.failure.ignore deploy"
+            }
+			post {
+                always {
+                   echo 'Maven Nexus Deploy  Done'
+                }
+				failure {
+					echo 'Maven Nexus Deploy  failure'
+				}
+				success {
+					echo 'Maven Nexus Deploy Success'
+				}	
+			}
+		}
 		stage('Jira Update Issues') {
 			steps {
 				echo 'Jira Update Issues'
