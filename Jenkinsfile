@@ -183,25 +183,29 @@ pipeline {
 				}	
 			}
 		}
-//		stage('Nexus Release Upload') {   
-//			steps {
-//				
-//				step([$class: 'NexusPublisherBuildStep', 
-//						nexusInstanceId: 'NexusDemoServer', nexusRepositoryId: 'releases', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: '/var/lib/jenkins/workspace/SpringPOC/SpringPOC/target/springpoc-1.0.0-BUILD-SNAPSHOT.war']], 
-//						mavenCoordinate: [artifactId: 'SpringPOC-war', groupId: 'CA-MMIS.jenkins.ci.SpringPOC', packaging: 'war', version: '${BUILD_NUMBER}']]]])
-//			}
-//			post {
-//                always {
-//                   echo 'Nexus Nexus Release Upload  Done'
-//                }
-//				failure {
-//					echo 'Nexus Nexus Release Upload failure'
-//				}
-//				success {
-//					echo 'Nexus Nexus Release Upload Success'
-//				}	
-//			}
-//		}
+		stage('Nexus Release Upload') {   
+			when {
+                // check if branch is master
+                branch 'master'
+            }
+			steps {
+				
+				step([$class: 'NexusPublisherBuildStep', 
+						nexusInstanceId: 'NexusDemoServer', nexusRepositoryId: 'releases', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: '/var/lib/jenkins/workspace/SpringPOC/SpringPOC/target/springpoc-1.0.0-BUILD-SNAPSHOT.war']], 
+						mavenCoordinate: [artifactId: 'SpringPOC-war', groupId: 'CA-MMIS.jenkins.ci.SpringPOC', packaging: 'war', version: '${BUILD_NUMBER}']]]])
+			}
+			post {
+                always {
+                   echo 'Nexus Nexus Release Upload  Done'
+                }
+				failure {
+					echo 'Nexus Nexus Release Upload failure'
+				}
+				success {
+					echo 'Nexus Nexus Release Upload Success'
+				}	
+			}
+		}
 //		stage('Nexus Snapshot Upload') {   
 //			steps {
 //				nexusArtifactUploader artifacts: [[artifactId: 'SpringPOC-war', 
