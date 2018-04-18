@@ -215,13 +215,13 @@ pipeline {
 			}
 			post {
                 always {
-                   echo 'Nexus Nexus Release Upload  Done'
+                   echo 'Nexus Snapshot Upload  Done'
                 }
 				failure {
-					echo 'Nexus Nexus Release Upload failure'
+					echo 'Nexus Snapshot Upload failure'
 				}
 				success {
-					echo 'Nexus Nexus Release Upload Success'
+					echo 'Nexus Snapshot Upload Success'
 				}	
 			}
 		}
