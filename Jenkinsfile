@@ -210,7 +210,7 @@ pipeline {
 				nexusUrl: '158.96.16.218:8081/nexus', 
 				nexusVersion: 'nexus2', 
 				protocol: 'http', 
-				repository: 'http://158.96.16.218:8081/nexus/content/repositories/snapshots/', 
+				repository: 'http://158.96.16.218:8081/nexus/content/repositories/snapshots', 
 				version: '${BUILD_NUMBER}'
 			}
 			post {
