@@ -291,7 +291,6 @@ pipeline {
 			steps {
 				echo 'Security Dependency Check'
 				dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
-				}
 			}
 			post {
                 always {
