@@ -4,16 +4,16 @@ pipeline {
         mvnHome = tool 'Maven_Config' 
     }
     stages {
-    	stage('Preparation') {
+/*    	stage('Preparation') {
 			steps {
 				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'errorTest'
 			}
-		}
-		stage('Starting Build') {
+		} */
+/*		stage('Starting Build') {
             steps {
 				slackSend (color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 			}
-		}
+		} */
 /*        stage('Build') {
             steps {
 				script {
@@ -85,6 +85,7 @@ pipeline {
 						slackSend (color: '#FFFF00', message: "Failed: Job - SonarQube Analysis Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 								// Fail the build
 //						error "Pipeline aborted due to quality gate failure "
+					}
 				}
 				success {
 					echo 'SonarQube Analysis Success'
