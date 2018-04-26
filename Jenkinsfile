@@ -319,6 +319,96 @@ pipeline {
 					echo 'Security Dependency Check Success'
 				}
 			}
-		} 		
+		}
+ 		stage('Security Dependency Publisher') {
+			steps {
+				echo 'Security Dependency Check'
+				dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
+			}
+			post {
+                always {
+					echo 'Security Dependency Publisher'
+                }	
+				failure {
+					script {
+						echo 'Security Dependency Publisher  failure'
+						testIssue = [fields: [ project: [key: 'PTP'],
+									summary: 'Jenkins Build Failure.',
+									description: "Jenkins Build Failed - Security Dependency Check -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+									priority: [name: 'Highest'],
+									issuetype: [name: 'Bug']]]
+
+						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+						echo response.successful.toString()
+						echo response.data.toString()
+						
+						slackSend (color: '#FFFF00', message: "Failed: Job - Security Dependency Publisher '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+								// Fail the build
+//						error "Pipeline aborted due to quality gate failure "
+					}
+				}
+				success {
+					echo 'Security Dependency Publisher Success'
+				}
+			}
+		} 
+		stage('AWS Code Deploy') {
+			steps {
+				echo 'AWS Code Deploy'
+				
+				step([$class: 'AWSCodeDeployPublisher', 
+						applicationName: 'SpringPOC', 
+						awsAccessKey: 'AKIAL7NDHY34EEWS7JGQ', 
+						awsSecretKey: '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', 
+						credentials: 'awsAccessKey', 
+						deploymentConfig: 'CodeDeployDefault.OneAtATime', 
+						deploymentGroupAppspec: false, 
+						deploymentGroupName: 'SpringPOCDG', 
+						deploymentMethod: 'deploy', 
+						excludes: '', 
+						iamRoleArn: '', 
+						includes: '**', 
+						pollingFreqSec: 15, 
+						pollingTimeoutSec: 300, 
+						proxyHost: '', 
+						proxyPort: 0, 
+						region: 'us-gov-west-1', 
+						s3bucket: 'codedeploybucket', 
+						s3prefix: '', 
+						subdirectory: 'SpringPOC', 
+						versionFileName: '', 
+						waitForCompletion: true])
+			
+			}
+			post {
+                always {
+					echo 'AWS Code Deploy'
+                }	
+				failure {
+					script {
+						echo 'AWS Code Deploy  failure'
+						testIssue = [fields: [ project: [key: 'PTP'],
+									summary: 'Jenkins Build Failure.',
+									description: "Jenkins Build Failed - AWS Code Deploy Failed-  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+									priority: [name: 'Highest'],
+									issuetype: [name: 'Bug']]]
+
+						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+						echo response.successful.toString()
+						echo response.data.toString()
+						
+						slackSend (color: '#FFFF00', message: "Failed: Job - AWS Code Deploy Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+								// Fail the build
+//						error "Pipeline aborted due to quality gate failure "
+					}
+				}
+				success {
+					echo 'AWS Code Deploy Success'
+					slackSend (color: '#00FF00', message: "Code Deploy SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+				}
+			}		
+		} 
 	}
 }
