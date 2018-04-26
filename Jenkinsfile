@@ -14,7 +14,7 @@ pipeline {
 				slackSend (color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 			}
 		}
- /*       stage('Build') {
+        stage('Build') {
             steps {
 				script {
 //					input message: 'Approve deployment?'
@@ -49,8 +49,8 @@ pipeline {
 					slackSend (color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 				}	
 			} 
-        } */
-    	stage('SonarQube analysis') { 
+        } 
+ /*   	stage('SonarQube analysis') { 
     		steps { 
 				withSonarQubeEnv('SonarQubeServer') {
 					sh '/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/Sonar/bin/sonar-scanner' +
@@ -131,7 +131,7 @@ pipeline {
 					echo 'SonarQube Quality Gate Success'
 				}	
 			}
-		}
+		} */
 		stage('Unit Test Report') {   
             steps {
 				junit '**/target/surefire-reports/*.xml'
