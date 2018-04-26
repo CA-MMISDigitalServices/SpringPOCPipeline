@@ -21,14 +21,14 @@ pipeline {
 					sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC -Dmaven.test.failure.ignore clean install cobertura:cobertura -Dcobertura.report.format=xml"
 				}
             }
-            post {
+ /*           post {
                 always {
                     echo 'Build Stage always'
 
                 }
 				failure {
 					echo 'Build Stage failure'
-/*					script {
+					script {
 						testIssue = [fields: [ project: [key: 'PTP'],
 									summary: 'Jenkins Build Failure.',
 									description: "Jenkins Build Failure -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
@@ -42,13 +42,13 @@ pipeline {
 						
 						slackSend (color: '#FFFF00', message: "Failed: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 
-					} */
+					} 
 				}
 				success {
 					echo 'Build Stage Success'
 					slackSend (color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 				}	
-			}
+			} */
         }
     	stage('SonarQube analysis') { 
     		steps { 
