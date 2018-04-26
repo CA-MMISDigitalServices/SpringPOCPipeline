@@ -214,6 +214,39 @@ pipeline {
 					echo 'Nexus Nexus Release Upload Success'
 				}	
 			}
+		} 
+		stage('Maven Nexus Deploy') {
+			steps {
+				sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dintegration-tests.skip=true deploy"
+            }
+			post {
+                always {
+                   echo 'Maven Nexus Deploy  Done'
+                }
+				failure {
+					echo 'Maven Nexus Deploy  failure'
+					script {
+						echo 'AWS Code Deploy  failure'
+						testIssue = [fields: [ project: [key: 'PTP'],
+									summary: 'Jenkins Build Failure.',
+									description: "Jenkins Build Failed - Nexus Depolyment Failed -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+									priority: [name: 'Highest'],
+									issuetype: [name: 'Bug']]]
+
+						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+						echo response.successful.toString()
+						echo response.data.toString()
+						
+						slackSend (color: '#FFFF00', message: "Failed: Job - AWS Code Deploy Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+								// Fail the build
+//						error "Pipeline aborted due to quality gate failure "
+					}
+				}
+				success {
+					echo 'Maven Nexus Deploy Success'
+				}	
+			}
 		} 		
 	}
 }
