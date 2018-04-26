@@ -28,7 +28,7 @@ pipeline {
                 }
 				failure {
 					echo 'Build Stage failure'
-					script {
+/*					script {
 						testIssue = [fields: [ project: [key: 'PTP'],
 									summary: 'Jenkins Build Failure.',
 									description: "Jenkins Build Failure -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
@@ -42,7 +42,7 @@ pipeline {
 						
 						slackSend (color: '#FFFF00', message: "Failed: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 
-					}
+					} */
 				}
 				success {
 					echo 'Build Stage Success'
