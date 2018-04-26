@@ -4,17 +4,17 @@ pipeline {
         mvnHome = tool 'Maven_Config' 
     }
     stages {
-/*    	stage('Preparation') {
+    	stage('Preparation') {
 			steps {
 				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'errorTest'
 			}
-		} */
-/*		stage('Starting Build') {
+		} 
+		stage('Starting Build') {
             steps {
 				slackSend (color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 			}
-		} */
-/*        stage('Build') {
+		} 
+       stage('Build') {
             steps {
 				script {
 //					input message: 'Approve deployment?'
@@ -49,7 +49,9 @@ pipeline {
 					slackSend (color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 				}	
 			} 
-        } */
+        } 
+	}
+}
  /*   	stage('SonarQube analysis') { 
     		steps { 
 				withSonarQubeEnv('SonarQubeServer') {
@@ -91,8 +93,8 @@ pipeline {
 					echo 'SonarQube Analysis Success'
 				}	
 			}
-		} */
- /*   	stage('SonarQube Quality Gate') { 
+		} 
+    	stage('SonarQube Quality Gate') { 
 			steps {
 				node('master'){ 
 					script {
@@ -132,8 +134,8 @@ pipeline {
 					echo 'SonarQube Quality Gate Success'
 				}	
 			}
-		} */
-/*		stage('Unit Test Report') {   
+		} 
+		stage('Unit Test Report') {   
             steps {
 				junit '**/target/surefire-reports/*.xml'
 	    	}     
@@ -157,8 +159,8 @@ pipeline {
 					echo 'unstable'
 				}
             }
-        } */
-/*		stage('Code Coverage Report') {   
+        } 
+		stage('Code Coverage Report') {   
             steps {
 				cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: '**/target/site/cobertura/coverage.xml', conditionalCoverageTargets: '70, 0, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '80, 0, 0', maxNumberOfBuilds: 0, methodCoverageTargets: '80, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
 	    	}
@@ -173,8 +175,8 @@ pipeline {
 					echo 'Code Coverage Report Success'
 				}	
 			}
-		} */
-/*		stage('Nexus Release Upload') {   
+		} 
+		stage('Nexus Release Upload') {   
 			when {
                 // check if branch is master
                 branch 'master'
@@ -213,8 +215,8 @@ pipeline {
 					echo 'Nexus Nexus Release Upload Success'
 				}	
 			}
-		} */
-/*		stage('Maven Nexus Deploy') {
+		} 
+		stage('Maven Nexus Deploy') {
 			steps {
 				sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dintegration-tests.skip=true deploy"
             }
@@ -246,8 +248,8 @@ pipeline {
 					echo 'Maven Nexus Deploy Success'
 				}	
 			}
-		} */
-/*		stage('Jira Update Issues') {
+		} 
+		stage('Jira Update Issues') {
 			steps {
 				echo 'Jira Update Issues'
 				
@@ -285,8 +287,8 @@ pipeline {
 					echo 'Jira Update Issues Success'
 				}
 			}		
-		} */
-/*		stage('Security Dependency Check') {
+		} 
+		stage('Security Dependency Check') {
 			steps {
 				echo 'Security Dependency Check'
 				dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
@@ -319,8 +321,8 @@ pipeline {
 					echo 'Security Dependency Check Success'
 				}
 			}
-		} */
-/*		stage('Security Dependency Publisher') {
+		} 
+		stage('Security Dependency Publisher') {
 			steps {
 				echo 'Security Dependency Check'
 				dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
@@ -352,8 +354,8 @@ pipeline {
 					echo 'Security Dependency Publisher Success'
 				}
 			}
-		} */
-/*		stage('AWS Code Deploy') {
+		} 
+		stage('AWS Code Deploy') {
 			steps {
 				echo 'AWS Code Deploy'
 				
@@ -409,9 +411,9 @@ pipeline {
 					slackSend (color: '#00FF00', message: "Code Deploy SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 				}
 			}		
-		} */
+		} 
  	}
- }
+ } */
  
  /*
 	Extra samples
