@@ -23,7 +23,7 @@ pipeline {
             }
             post {
                 always {
-                    echo Build Stage always'
+                    echo 'Build Stage always'
 
                 }
 				failure {
