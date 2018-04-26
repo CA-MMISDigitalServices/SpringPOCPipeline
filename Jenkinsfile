@@ -174,6 +174,46 @@ pipeline {
 					echo 'Code Coverage Report Success'
 				}	
 			}
+		} 
+		stage('Nexus Release Upload') {   
+			when {
+                // check if branch is master
+                branch 'master'
+            }
+			steps {
+				
+				step([$class: 'NexusPublisherBuildStep', 
+						nexusInstanceId: 'NexusDemoServer', nexusRepositoryId: 'releases', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: '/var/lib/jenkins/workspace/SpringPOC/SpringPOC/target/springpoc-1.0.0-BUILD-SNAPSHOT.war']], 
+						mavenCoordinate: [artifactId: 'SpringPOC-war', groupId: 'CA-MMIS.jenkins.ci.SpringPOC', packaging: 'war', version: '${BUILD_NUMBER}']]]])
+			}
+			post {
+                always {
+                   echo 'Nexus Nexus Release Upload  Done'
+                }
+				failure {
+					echo 'Nexus Nexus Release Upload failure'
+					script {
+						echo 'AWS Code Deploy  failure'
+						testIssue = [fields: [ project: [key: 'PTP'],
+									summary: 'Jenkins Build Failure.',
+									description: "Jenkins Build Failed - Nexus Upload Failed-  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+									priority: [name: 'Highest'],
+									issuetype: [name: 'Bug']]]
+
+						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+						echo response.successful.toString()
+						echo response.data.toString()
+						
+						slackSend (color: '#FFFF00', message: "Failed: Job - Nexus Upload Failed Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+								// Fail the build
+//						error "Pipeline aborted due to quality gate failure "
+					}
+				}
+				success {
+					echo 'Nexus Nexus Release Upload Success'
+				}	
+			}
 		} 		
 	}
 }
