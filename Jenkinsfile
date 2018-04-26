@@ -133,6 +133,31 @@ pipeline {
 					echo 'SonarQube Quality Gate Success'
 				}	
 			}
-		} 
+		}
+		stage('Unit Test Report') {   
+            steps {
+				junit '**/target/surefire-reports/*.xml'
+	    	}     
+        	post {
+				always {
+                 	echo 'always'
+                }
+				changed {
+		 			echo 'change'
+				}
+				aborted {
+					echo 'aborted'
+				}
+				failure {
+					echo 'failure'
+				}
+				success {
+					echo 'success'
+				}
+				unstable {
+					echo 'unstable'
+				}
+            }
+        } 		
 	}
 }
