@@ -23,12 +23,11 @@ pipeline {
             }
             post {
                 always {
-                    echo '******************* always'
-//					jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])
+                    echo Build Stage always'
+
                 }
 				failure {
-					echo '****************** failure'
-//					jiraComment body: 'Build Failed', issueKey: 'PTP'
+					echo 'Build Stage failure'
 					script {
 						testIssue = [fields: [ project: [key: 'PTP'],
 									summary: 'Jenkins Build Failure.',
@@ -46,36 +45,11 @@ pipeline {
 					}
 				}
 				success {
-					echo '****************** success'
-//					jiraComment body: 'Build Succsessful', issueKey: 'PTP-26'
+					echo 'Build Stage Success'
 					slackSend (color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 				}	
 			}
         }
-//        stage('robot test') {
-//        	steps {
-//        		node('master') {
-//  				 	script {
-//                    	MYLIST = []
-//                    	MYLIST += "param-one"
-//                    	MYLIST += "param-two"
-//                    	MYLIST += "param-three"
-//                    	MYLIST += "param-four"
-//                    	MYLIST += "param-five"
-//                    
-//                   		 MRSTR = jiraJqlSearch jql: 'PROJECT = PTP', auditLog: true, site: 'CAMMIS'
-//                    
-//                    	echo MRSTR.data.toString()
-//	
-//						for (def element = 0; element < MYLIST.size(); element++) {
-//				
-//							echo MYLIST[element]  
-//                        
-//               			}
-//				 	}
-//				}   
-//        	}
-//    	}
     	stage('SonarQube analysis') { 
     		steps { 
 				withSonarQubeEnv('SonarQubeServer') {
@@ -95,6 +69,22 @@ pipeline {
                 }
 				failure {
 					echo 'SonarQube Analysis  failure'
+					script {
+						echo 'AWS Code Deploy  failure'
+						testIssue = [fields: [ project: [key: 'PTP'],
+									summary: 'Jenkins Build Failure.',
+									description: "Jenkins Build Failed - SonarQube Analysis Failed -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+									priority: [name: 'Highest'],
+									issuetype: [name: 'Bug']]]
+
+						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+						echo response.successful.toString()
+						echo response.data.toString()
+						
+						slackSend (color: '#FFFF00', message: "Failed: Job - SonarQube Analysis Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+								// Fail the build
+//						error "Pipeline aborted due to quality gate failure "
 				}
 				success {
 					echo 'SonarQube Analysis Success'
@@ -200,38 +190,29 @@ pipeline {
                 }
 				failure {
 					echo 'Nexus Nexus Release Upload failure'
+					script {
+						echo 'AWS Code Deploy  failure'
+						testIssue = [fields: [ project: [key: 'PTP'],
+									summary: 'Jenkins Build Failure.',
+									description: "Jenkins Build Failed - Nexus Upload Failed-  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+									priority: [name: 'Highest'],
+									issuetype: [name: 'Bug']]]
+
+						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+						echo response.successful.toString()
+						echo response.data.toString()
+						
+						slackSend (color: '#FFFF00', message: "Failed: Job - Nexus Upload Failed Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+								// Fail the build
+//						error "Pipeline aborted due to quality gate failure "
+					}
 				}
 				success {
 					echo 'Nexus Nexus Release Upload Success'
 				}	
 			}
 		}
-//		stage('Nexus Snapshot Upload') {   
-//			steps {
-//				nexusArtifactUploader artifacts: [[artifactId: 'SpringPOC-war', 
-//				classifier: '', 
-//				file: '/var/lib/jenkins/workspace/SpringPOC/SpringPOC/target/springpoc-1.0.0-BUILD-SNAPSHOT.war', 
-//				type: 'war']], 
-//				credentialsId: 'Admin', 
-//				groupId: 'CA-MMIS.jenkins.ci.SpringPOC', 
-//				nexusUrl: '158.96.16.218:8081/nexus', 
-//				nexusVersion: 'nexus2', 
-//				protocol: 'http', 
-//				repository: 'http://158.96.16.218:8081/nexus/content/repositories/snapshots', 
-//				version: '${BUILD_NUMBER}'
-//			}
-//			post {
-//                always {
-//                   echo 'Nexus Snapshot Upload  Done'
-//                }
-//				failure {
-//					echo 'Nexus Snapshot Upload failure'
-//				}
-//				success {
-//					echo 'Nexus Snapshot Upload Success'
-//				}	
-//			}
-//		}
 		stage('Maven Nexus Deploy') {
 			steps {
 				sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dintegration-tests.skip=true deploy"
@@ -242,6 +223,23 @@ pipeline {
                 }
 				failure {
 					echo 'Maven Nexus Deploy  failure'
+					script {
+						echo 'AWS Code Deploy  failure'
+						testIssue = [fields: [ project: [key: 'PTP'],
+									summary: 'Jenkins Build Failure.',
+									description: "Jenkins Build Failed - Nexus Depolyment Failed -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+									priority: [name: 'Highest'],
+									issuetype: [name: 'Bug']]]
+
+						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+						echo response.successful.toString()
+						echo response.data.toString()
+						
+						slackSend (color: '#FFFF00', message: "Failed: Job - AWS Code Deploy Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+								// Fail the build
+//						error "Pipeline aborted due to quality gate failure "
+					}
 				}
 				success {
 					echo 'Maven Nexus Deploy Success'
@@ -264,11 +262,95 @@ pipeline {
                 }	
 				failure {
 					echo 'Jira Update Issues  failure'
+					script {
+						echo 'AWS Code Deploy  failure'
+						testIssue = [fields: [ project: [key: 'PTP'],
+									summary: 'Jenkins Build Failure.',
+									description: "Jenkins Build Failed - Jira Update Issues Failed-  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+									priority: [name: 'Highest'],
+									issuetype: [name: 'Bug']]]
+
+						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+						echo response.successful.toString()
+						echo response.data.toString()
+						
+						slackSend (color: '#FFFF00', message: "Failed: Job - Jira Update Issues '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+								// Fail the build
+//						error "Pipeline aborted due to quality gate failure "
+					}
 				}
 				success {
 					echo 'Jira Update Issues Success'
 				}
 			}		
+		}
+		stage('Security Dependency Check') {
+			steps {
+				echo 'Security Dependency Check'
+				dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
+				}
+			}
+			post {
+                always {
+					echo 'Security Dependency Check'
+                }	
+				failure {
+					script {
+						echo 'Security Dependency Check  failure'
+						testIssue = [fields: [ project: [key: 'PTP'],
+									summary: 'Jenkins Build Failure.',
+									description: "Jenkins Build Failed - Security Dependency Check -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+									priority: [name: 'Highest'],
+									issuetype: [name: 'Bug']]]
+
+						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+						echo response.successful.toString()
+						echo response.data.toString()
+						
+						slackSend (color: '#FFFF00', message: "Failed: Job - Security Dependency Check '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+								// Fail the build
+//						error "Pipeline aborted due to quality gate failure "
+					}
+				}
+				success {
+					echo 'Security Dependency Check Success'
+				}
+			}
+		}
+		stage('Security Dependency Publisher') {
+			steps {
+				echo 'Security Dependency Check'
+				dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
+			}
+			post {
+                always {
+					echo 'Security Dependency Publisher'
+                }	
+				failure {
+					script {
+						echo 'Security Dependency Publisher  failure'
+						testIssue = [fields: [ project: [key: 'PTP'],
+									summary: 'Jenkins Build Failure.',
+									description: "Jenkins Build Failed - Security Dependency Check -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+									priority: [name: 'Highest'],
+									issuetype: [name: 'Bug']]]
+
+						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+						echo response.successful.toString()
+						echo response.data.toString()
+						
+						slackSend (color: '#FFFF00', message: "Failed: Job - Security Dependency Publisher '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+								// Fail the build
+//						error "Pipeline aborted due to quality gate failure "
+					}
+				}
+				success {
+					echo 'Security Dependency Publisher Success'
+				}
+			}
 		}
 		stage('AWS Code Deploy') {
 			steps {
@@ -276,8 +358,8 @@ pipeline {
 				
 				step([$class: 'AWSCodeDeployPublisher', 
 						applicationName: 'SpringPOC', 
-						awsAccessKey: '+', 
-						awsSecretKey: '+', 
+						awsAccessKey: 'AKIAL7NDHY34EEWS7JGQ', 
+						awsSecretKey: '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', 
 						credentials: 'awsAccessKey', 
 						deploymentConfig: 'CodeDeployDefault.OneAtATime', 
 						deploymentGroupAppspec: false, 
@@ -318,7 +400,7 @@ pipeline {
 						
 						slackSend (color: '#FFFF00', message: "Failed: Job - AWS Code Deploy Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 								// Fail the build
-						error "Pipeline aborted due to quality gate failure "
+//						error "Pipeline aborted due to quality gate failure "
 					}
 				}
 				success {
@@ -329,3 +411,63 @@ pipeline {
 		}
  	}
  }
+ 
+ //
+ // Extra samples
+ //
+ 
+ /*        stage('robot test') {
+        	steps {
+        		node('master') {
+  				 	script {
+                    	MYLIST = []
+                    	MYLIST += "param-one"
+                    	MYLIST += "param-two"
+                    	MYLIST += "param-three"
+                    	MYLIST += "param-four"
+                    	MYLIST += "param-five"
+                    
+                   		 MRSTR = jiraJqlSearch jql: 'PROJECT = PTP', auditLog: true, site: 'CAMMIS'
+                    
+                    	echo MRSTR.data.toString()
+	
+						for (def element = 0; element < MYLIST.size(); element++) {
+				
+							echo MYLIST[element]  
+                        
+               			}
+				 	}
+				}   
+        	}
+    	} */
+		
+		
+/*		stage('Nexus Snapshot Upload') {   
+			steps {
+				nexusArtifactUploader artifacts: [[artifactId: 'SpringPOC-war', 
+				classifier: '', 
+				file: '/var/lib/jenkins/workspace/SpringPOC/SpringPOC/target/springpoc-1.0.0-BUILD-SNAPSHOT.war', 
+				type: 'war']], 
+				credentialsId: 'Admin', 
+				groupId: 'CA-MMIS.jenkins.ci.SpringPOC', 
+				nexusUrl: '158.96.16.218:8081/nexus', 
+				nexusVersion: 'nexus2', 
+				protocol: 'http', 
+				repository: 'http://158.96.16.218:8081/nexus/content/repositories/snapshots', 
+				version: '${BUILD_NUMBER}'
+			}
+			post {
+                always {
+                   echo 'Nexus Snapshot Upload  Done'
+                }
+				failure {
+					echo 'Nexus Snapshot Upload failure'
+				}
+				success {
+					echo 'Nexus Snapshot Upload Success'
+				}	
+			}
+		} */	
+		
+//					jiraIssueSelector(issueSelector: [$class: 'DefaultIssueSelector'])	
+//					jiraComment body: 'Build Succsessful', issueKey: 'PTP-26'	
