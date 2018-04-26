@@ -17,7 +17,7 @@ pipeline {
         stage('Build') {
             steps {
 				script {
-					input message: 'Approve deployment?'
+//					input message: 'Approve deployment?'
 					sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC -Dmaven.test.failure.ignore clean install cobertura:cobertura -Dcobertura.report.format=xml"
 				}
             }
