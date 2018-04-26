@@ -247,6 +247,45 @@ pipeline {
 					echo 'Maven Nexus Deploy Success'
 				}	
 			}
+		} 
+		stage('Jira Update Issues') {
+			steps {
+				echo 'Jira Update Issues'
+				
+				step([$class: 'hudson.plugins.jira.JiraIssueUpdater', 
+					issueSelector: [$class: 'hudson.plugins.jira.selector.DefaultIssueSelector'], 
+					scm: [$class: 'GitSCM', branches: [[name: '*/master']], 
+					userRemoteConfigs: [[url: 'https://github.com/CA-MMISDigitalServices/Dev.git']]]])
+			
+			}
+			post {
+                always {
+					echo 'Jira Update Issues'
+                }	
+				failure {
+					echo 'Jira Update Issues  failure'
+					script {
+						echo 'AWS Code Deploy  failure'
+						testIssue = [fields: [ project: [key: 'PTP'],
+									summary: 'Jenkins Build Failure.',
+									description: "Jenkins Build Failed - Jira Update Issues Failed-  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+									priority: [name: 'Highest'],
+									issuetype: [name: 'Bug']]]
+
+						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+						echo response.successful.toString()
+						echo response.data.toString()
+						
+						slackSend (color: '#FFFF00', message: "Failed: Job - Jira Update Issues '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+								// Fail the build
+//						error "Pipeline aborted due to quality gate failure "
+					}
+				}
+				success {
+					echo 'Jira Update Issues Success'
+				}
+			}		
 		} 		
 	}
 }
