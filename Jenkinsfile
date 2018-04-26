@@ -276,8 +276,8 @@ pipeline {
 				
 				step([$class: 'AWSCodeDeployPublisher', 
 						applicationName: 'SpringPOC', 
-						awsAccessKey: 'AKIAL7NDHY34EEWS7JGQ', 
-						awsSecretKey: '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', 
+						awsAccessKey: '+', 
+						awsSecretKey: '+', 
 						credentials: 'awsAccessKey', 
 						deploymentConfig: 'CodeDeployDefault.OneAtATime', 
 						deploymentGroupAppspec: false, 
