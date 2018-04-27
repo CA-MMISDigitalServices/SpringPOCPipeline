@@ -356,6 +356,8 @@ pipeline {
 		stage('AWS Code Deploy') {
 			steps {
 				echo 'AWS Code Deploy'
+				echo "awsAccessKey :" + env.AWS_ACCESS_KEY_ID
+				echo "awsSecretKey :" + env.AWS_SECRET_ACCESS_KEY
 				
 				step([$class: 'AWSCodeDeployPublisher', 
 						applicationName: 'SpringPOC', 
