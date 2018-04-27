@@ -356,13 +356,13 @@ pipeline {
 		stage('AWS Code Deploy') {
 			steps {
 				echo 'AWS Code Deploy'
-				echo "awsAccessKey :" + env.AWS_ACCESS_KEY_ID
-				echo "awsSecretKey :" + env.AWS_SECRET_ACCESS_KEY
+				echo "env.AWS_ACCESS_KEY_ID :" + env.AWS_ACCESS_KEY_ID
+				echo "env.AWS_SECRET_ACCESS_KEY :" + env.AWS_SECRET_ACCESS_KEY
 				
 				step([$class: 'AWSCodeDeployPublisher', 
 						applicationName: 'SpringPOC', 
-						awsAccessKey: '${env.AWS_ACCESS_KEY_ID}',
-						awsSecretKey: '${env.AWS_SECRET_ACCESS_KEY}', 
+						awsAccessKey: env.AWS_ACCESS_KEY_ID,
+						awsSecretKey: env.AWS_SECRET_ACCESS_KEY, 
 						credentials: 'awsAccessKey', 
 						deploymentConfig: 'CodeDeployDefault.OneAtATime', 
 						deploymentGroupAppspec: false, 
