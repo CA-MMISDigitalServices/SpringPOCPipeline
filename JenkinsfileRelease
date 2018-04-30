@@ -14,10 +14,10 @@ pipeline {
 		workingBranch= 'master'
 		
 		//POM file locations for Maven
-		workingPOM = '/var/lib/jenkins/workspace/TestPipeline/SpringPOC'
+		workingPOM = '/var/lib/jenkins/workspace/TestPipelineRelease/SpringPOC'
 		
 		// Jenkins setup 
-		workingJob= 'TestPipeline'
+		workingJob= 'TestPipelineRelease'
 		workingProject= 'SpringPOC'
 		workingJenkinsDir= '/var/lib/jenkins/workspace'
 		
@@ -61,9 +61,9 @@ pipeline {
                     print 'target build version...'
                     print targetVersion
 					
-                    sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dintegration-tests.skip=true -Dbuild.number=${targetVersion} clean package cobertura:cobertura -Dcobertura.report.format=xml -B"
+                    sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dintegration-tests.skip=true -Dbuild.number=${targetVersion} clean package cobertura:cobertura -Dcobertura.report.format=xml"
 				
-                    def pom = readMavenPom file: '/var/lib/jenkins/workspace/jiraPL/XMLtoPDF/pom.xml'
+                    def pom = readMavenPom file: '"${workingJenkinsDir}"/"${workingJob}"/"${workingProject}"/pom.xml'
                     // get the current development version 
 //                   developmentArtifactVersion = "${pom.version}-${targetVersion}"
 //					echo 'developmentArtifactVersion:   ' + developmentArtifactVersion
