@@ -28,7 +28,6 @@ pipeline {
     stages {
     	stage('Preparation') {
 			steps {
-	//			git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'errorTest'
 				git url: "${workingGitURL}", branch: "${workingBranch}"
 			}
 		} 
@@ -41,7 +40,6 @@ pipeline {
             steps {
 				script {
 //					input message: 'Approve deployment?'
-//					sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC -Dmaven.test.failure.ignore clean install cobertura:cobertura -Dcobertura.report.format=xml"
 					sh "'${mvnHome}/bin/mvn' -X -B --file '${workingPOM}' -Dmaven.test.failure.ignore clean install cobertura:cobertura -Dcobertura.report.format=xml"
 
 				}
@@ -83,13 +81,9 @@ pipeline {
 					' -Dsonar.host.url=http://158.96.16.211:9000/' + 
 					' -Dsonar.projectVersion=1.0' +
 					' -Dsonar.sourceEncoding=UTF-8' +
-//					' -Dsonar.projectKey=TestPipeline' +
 					' -Dsonar.projectKey="${workingJob}"' +
-//					' -Dsonar.java.binaries=/var/lib/jenkins/workspace/TestPipeline/SpringPOC/target/classes' +
 					' -Dsonar.java.binaries="${workingJenkinsDir}"/"${workingJob}"/"${workingProject}"/target/classes' +
-//					' -Dsonar.sources=SpringPOC/src' +
 					' -Dsonar.sources="${workingProject}"/src' +
-//					' -Dsonar.projectBaseDir=/var/lib/jenkins/workspace/TestPipeline'
 					' -Dsonar.projectBaseDir="${workingJenkinsDir}"/"${workingJob}"'
 				}
 			}
@@ -113,8 +107,6 @@ pipeline {
 						echo response.data.toString()
 						
 						slackSend (color: '#FFFF00', message: "Failed: Job - SonarQube Analysis Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-								// Fail the build
-//						error "Pipeline aborted due to quality gate failure "
 					}
 				}
 				success {
@@ -213,7 +205,6 @@ pipeline {
 				
 				step([$class: 'NexusPublisherBuildStep', 
 						nexusInstanceId: 'NexusDemoServer', nexusRepositoryId: 'releases', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: '/var/lib/jenkins/workspace/SpringPOC/SpringPOC/target/springpoc-1.0.0-BUILD-SNAPSHOT.war']], 
-//						mavenCoordinate: [artifactId: 'SpringPOC-war', groupId: 'CA-MMIS.jenkins.ci.SpringPOC', packaging: 'war', version: '${BUILD_NUMBER}']]]])
 						mavenCoordinate: [artifactId: 'SpringPOC-war', groupId: 'CA-MMIS.jenkins.ci."${workingProject}"', packaging: 'war', version: '${BUILD_NUMBER}']]]])
 			}
 			post {
@@ -235,9 +226,7 @@ pipeline {
 						echo response.successful.toString()
 						echo response.data.toString()
 						
-						slackSend (color: '#FFFF00', message: "Failed: Job - Nexus Upload Failed Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-								// Fail the build
-//						error "Pipeline aborted due to quality gate failure "
+						slackSend (color: '#FFFF00', message: "Failed: Job - Nexus Upload Failed Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")						
 					}
 				}
 				success {
@@ -269,8 +258,6 @@ pipeline {
 						echo response.data.toString()
 						
 						slackSend (color: '#FFFF00', message: "Failed: Job - AWS Code Deploy Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-								// Fail the build
-//						error "Pipeline aborted due to quality gate failure "
 					}
 				}
 				success {
@@ -284,9 +271,7 @@ pipeline {
 				
 				step([$class: 'hudson.plugins.jira.JiraIssueUpdater', 
 					issueSelector: [$class: 'hudson.plugins.jira.selector.DefaultIssueSelector'], 
-//					scm: [$class: 'GitSCM', branches: [[name: '*/master']], 
 					scm: [$class: 'GitSCM', branches: [[name: '*/"${workingBranch}"']], 
-//					userRemoteConfigs: [[url: 'https://github.com/CA-MMISDigitalServices/Dev.git']]]])
 					userRemoteConfigs: [[url: "${workingGitURL}"]]]])
 			}
 			post {
@@ -309,8 +294,6 @@ pipeline {
 						echo response.data.toString()
 						
 						slackSend (color: '#FFFF00', message: "Failed: Job - Jira Update Issues '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-								// Fail the build
-//						error "Pipeline aborted due to quality gate failure "
 					}
 				}
 				success {
@@ -342,8 +325,6 @@ pipeline {
 						echo response.data.toString()
 						
 						slackSend (color: '#FFFF00', message: "Failed: Job - Security Dependency Check '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-								// Fail the build
-//						error "Pipeline aborted due to quality gate failure "
 					}
 				}
 				success {
@@ -375,8 +356,6 @@ pipeline {
 						echo response.data.toString()
 						
 						slackSend (color: '#FFFF00', message: "Failed: Job - Security Dependency Publisher '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-								// Fail the build
-//						error "Pipeline aborted due to quality gate failure "
 					}
 				}
 				success {
@@ -391,14 +370,12 @@ pipeline {
 				echo "env.AWS_SECRET_ACCESS_KEY :" + env.AWS_SECRET_ACCESS_KEY
 				
 				step([$class: 'AWSCodeDeployPublisher', 
-//						applicationName: 'SpringPOC', 
 						applicationName: "${AWSCDapplicationName}",
 						awsAccessKey: env.AWS_ACCESS_KEY_ID,
 						awsSecretKey: env.AWS_SECRET_ACCESS_KEY, 
 						credentials: 'awsAccessKey', 
 						deploymentConfig: 'CodeDeployDefault.OneAtATime', 
 						deploymentGroupAppspec: false, 
-//						deploymentGroupName: 'SpringPOCDG', 
 						deploymentGroupName: "${AWSCDDeploymentGroupName}", 
 						deploymentMethod: 'deploy', 
 						excludes: '', 
@@ -411,7 +388,6 @@ pipeline {
 						region: 'us-gov-west-1', 
 						s3bucket: 'codedeploybucket', 
 						s3prefix: '', 
-//						subdirectory: 'SpringPOC', 
 						subdirectory: "${AWSCDSubDirectory}",
 						versionFileName: '', 
 						waitForCompletion: true])
@@ -436,8 +412,6 @@ pipeline {
 						echo response.data.toString()
 						
 						slackSend (color: '#FFFF00', message: "Failed: Job - AWS Code Deploy Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-								// Fail the build
-//						error "Pipeline aborted due to quality gate failure "
 					}
 				}
 				success {
