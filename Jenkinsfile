@@ -1,20 +1,27 @@
 pipeline {
     agent any
     environment { 
+	
         mvnHome = tool 'Maven_Config' 
 		
+		// GitHub setup
 		workingGitURL= 'https://github.com/CA-MMISDigitalServices/Dev.git'     
-//		workingGitJiraURL ='https://github.com/CA-MMISDigitalServices/Dev.git' 
 		workingBranch= 'errorTest'
+		
+		//POM file locations for Maven
 		workingPOM = '/var/lib/jenkins/workspace/TestPipeline/SpringPOC'
+		
+		// Jenkins setup 
 		workingJob= 'TestPipeline'
 		workingProject= 'SpringPOC'
-//		workingSonarBinaries= '/var/lib/jenkins/workspace/TestPipeline/SpringPOC/target/classes'
-//		workingBaseDir= '/var/lib/jenkins/workspace/TestPipeline'
 		workingJenkinsDir= '/var/lib/jenkins/workspace'
+		
+		// AWS code Deploy setup
 		AWSCDapplicationName= 'SpringPOC'
 		AWSCDDeploymentGroupName= 'SpringPOCDG'
 		AWSCDSubDirectory= 'SpringPOC'
+		
+		// Jira project setup
 		workingJiraProject ='PTP'
 		
     }
