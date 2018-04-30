@@ -78,7 +78,7 @@ pipeline {
 //					' -Dsonar.java.binaries=/var/lib/jenkins/workspace/TestPipeline/SpringPOC/target/classes' +
 					' -Dsonar.java.binaries="${workingSonarBinaries}"' +
 //					' -Dsonar.sources=SpringPOC/src' +
-					' -Dsonar.sources="${workingJob}"/src' +
+					' -Dsonar.sources="${workingProject}"/src' +
 //					' -Dsonar.projectBaseDir=/var/lib/jenkins/workspace/TestPipeline'
 					' -Dsonar.projectBaseDir="${workingBaseDir}"'
 				}
