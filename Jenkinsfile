@@ -47,7 +47,7 @@ pipeline {
 				failure {
 					echo 'Build Stage failure'
 					script {
-						testIssue = [fields: [ project: [key: 'PTP'],
+						testIssue = [fields: [ project: [key: '"${workingJiraProject}"'],
 									summary: 'Jenkins Build Failure.',
 									description: "Jenkins Build Failure -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
 									priority: [name: 'Highest'],
@@ -94,7 +94,7 @@ pipeline {
 					echo 'SonarQube Analysis  failure'
 					script {
 						echo 'AWS Code Deploy  failure'
-						testIssue = [fields: [ project: [key: 'PTP'],
+						testIssue = [fields: [ project: [key: '"${workingJiraProject}"'],
 									summary: 'Jenkins Build Failure.',
 									description: "Jenkins Build Failed - SonarQube Analysis Failed -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
 									priority: [name: 'Highest'],
@@ -125,7 +125,7 @@ pipeline {
 							echo qualityGate.status.toString() 
 							if (qualityGate.status != 'OK') {
 							
-								testIssue = [fields: [ project: [key: 'PTP'],
+								testIssue = [fields: [ project: [key: '"${workingJiraProject}"'],
 									summary: 'Jenkins Build Failure.',
 									description: "Jenkins Build Sonar Quality Gate Failure -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
 									priority: [name: 'Highest'],
@@ -217,7 +217,7 @@ pipeline {
 					echo 'Nexus Nexus Release Upload failure'
 					script {
 						echo 'AWS Code Deploy  failure'
-						testIssue = [fields: [ project: [key: 'PTP'],
+						testIssue = [fields: [ project: [key: '"${workingJiraProject}"'],
 									summary: 'Jenkins Build Failure.',
 									description: "Jenkins Build Failed - Nexus Upload Failed-  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
 									priority: [name: 'Highest'],
@@ -250,7 +250,7 @@ pipeline {
 					echo 'Maven Nexus Deploy  failure'
 					script {
 						echo 'AWS Code Deploy  failure'
-						testIssue = [fields: [ project: [key: 'PTP'],
+						testIssue = [fields: [ project: [key: '"${workingJiraProject}"'],
 									summary: 'Jenkins Build Failure.',
 									description: "Jenkins Build Failed - Nexus Depolyment Failed -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
 									priority: [name: 'Highest'],
@@ -290,7 +290,7 @@ pipeline {
 					echo 'Jira Update Issues  failure'
 					script {
 						echo 'AWS Code Deploy  failure'
-						testIssue = [fields: [ project: [key: 'PTP'],
+						testIssue = [fields: [ project: [key: '"${workingJiraProject}"'],
 									summary: 'Jenkins Build Failure.',
 									description: "Jenkins Build Failed - Jira Update Issues Failed-  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
 									priority: [name: 'Highest'],
@@ -323,7 +323,7 @@ pipeline {
 				failure {
 					script {
 						echo 'Security Dependency Check  failure'
-						testIssue = [fields: [ project: [key: 'PTP'],
+						testIssue = [fields: [ project: [key: '"${workingJiraProject}"'],
 									summary: 'Jenkins Build Failure.',
 									description: "Jenkins Build Failed - Security Dependency Check -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
 									priority: [name: 'Highest'],
@@ -356,7 +356,7 @@ pipeline {
 				failure {
 					script {
 						echo 'Security Dependency Publisher  failure'
-						testIssue = [fields: [ project: [key: 'PTP'],
+						testIssue = [fields: [ project: [key: '"${workingJiraProject}"'],
 									summary: 'Jenkins Build Failure.',
 									description: "Jenkins Build Failed - Security Dependency Check -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
 									priority: [name: 'Highest'],
@@ -417,7 +417,7 @@ pipeline {
 				failure {
 					script {
 						echo 'AWS Code Deploy  failure'
-						testIssue = [fields: [ project: [key: 'PTP'],
+						testIssue = [fields: [ project: [key: '"${workingJiraProject}"'],
 									summary: 'Jenkins Build Failure.',
 									description: "Jenkins Build Failed - AWS Code Deploy Failed-  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
 									priority: [name: 'Highest'],
