@@ -2,11 +2,23 @@ pipeline {
     agent any
     environment { 
         mvnHome = tool 'Maven_Config' 
+		
+		workingGitURL= 'https://github.com/rduart/XMLtoPDF.git'   
+		workingGitJiraURL ='https://github.com/CA-MMISDigitalServices/Dev.git' 
+		workingBranch= 'master'
+		workingPOM = '/var/lib/jenkins/workspace/jiraPL/XMLtoPDF/pom.xml'
+		workingJob= 'jiraPL'
+		workingProject= 'XMLtoPDF'
+		workingSonarBinaries= '/var/lib/jenkins/workspace/jiraPL/XMLtoPDF/target/classes'
+		AWSCDapplicationName= 'SprinPOC'
+		AWSCDDeploymentGroupName= 'SprinPOCDG'
+		AWSCDSubDirectory= 'SpringPOC'
     }
     stages {
     	stage('Preparation') {
 			steps {
 				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'errorTest'
+				git url: '$workingGitURL', branch: '$workingBranch'
 			}
 		} 
 		stage('Starting Build') {
