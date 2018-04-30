@@ -6,7 +6,7 @@ pipeline {
 		workingGitURL= 'https://github.com/CA-MMISDigitalServices/Dev.git'     
 		workingGitJiraURL ='https://github.com/CA-MMISDigitalServices/Dev.git' 
 		workingBranch= 'errorTest'
-		workingPOM = '/var/lib/jenkins/workspace/jiraPL/XMLtoPDF/pom.xml'
+		workingPOM = '/var/lib/jenkins/workspace/TestPipeline/SpringPOC'
 		workingJob= 'jiraPL'
 		workingProject= 'XMLtoPDF'
 		workingSonarBinaries= '/var/lib/jenkins/workspace/jiraPL/XMLtoPDF/target/classes'
