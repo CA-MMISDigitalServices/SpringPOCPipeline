@@ -396,7 +396,7 @@ pipeline {
 						s3bucket: 'codedeploybucket', 
 						s3prefix: '', 
 //						subdirectory: 'SpringPOC', 
-						subdirectory: "${AWSCDSubDirectory}"
+						subdirectory: "${AWSCDSubDirectory}",
 						versionFileName: '', 
 						waitForCompletion: true])
 			
