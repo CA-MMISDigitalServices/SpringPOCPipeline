@@ -4,16 +4,19 @@ pipeline {
         mvnHome = tool 'Maven_Config' 
 		
 		workingGitURL= 'https://github.com/CA-MMISDigitalServices/Dev.git'     
-		workingGitJiraURL ='https://github.com/CA-MMISDigitalServices/Dev.git' 
+//		workingGitJiraURL ='https://github.com/CA-MMISDigitalServices/Dev.git' 
 		workingBranch= 'errorTest'
 		workingPOM = '/var/lib/jenkins/workspace/TestPipeline/SpringPOC'
 		workingJob= 'TestPipeline'
 		workingProject= 'SpringPOC'
-		workingSonarBinaries= '/var/lib/jenkins/workspace/TestPipeline/SpringPOC/target/classes'
-		workingBaseDir= '/var/lib/jenkins/workspace/TestPipeline'
+//		workingSonarBinaries= '/var/lib/jenkins/workspace/TestPipeline/SpringPOC/target/classes'
+//		workingBaseDir= '/var/lib/jenkins/workspace/TestPipeline'
+		workingJenkinsDir= '/var/lib/jenkins/workspace'
 		AWSCDapplicationName= 'SpringPOC'
 		AWSCDDeploymentGroupName= 'SpringPOCDG'
 		AWSCDSubDirectory= 'SpringPOC'
+		workingJiraProject ='PTP'
+		
     }
     stages {
     	stage('Preparation') {
@@ -76,11 +79,11 @@ pipeline {
 //					' -Dsonar.projectKey=TestPipeline' +
 					' -Dsonar.projectKey="${workingJob}"' +
 //					' -Dsonar.java.binaries=/var/lib/jenkins/workspace/TestPipeline/SpringPOC/target/classes' +
-					' -Dsonar.java.binaries="${workingSonarBinaries}"' +
+					' -Dsonar.java.binaries="${workingJenkinsDir}"/"${workingJob}"/"${workingProject}"/target/classes' +
 //					' -Dsonar.sources=SpringPOC/src' +
 					' -Dsonar.sources="${workingProject}"/src' +
 //					' -Dsonar.projectBaseDir=/var/lib/jenkins/workspace/TestPipeline'
-					' -Dsonar.projectBaseDir="${workingBaseDir}"'
+					' -Dsonar.projectBaseDir="${workingJenkinsDir}"/"${workingJob}"'
 				}
 			}
 			post {
