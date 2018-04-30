@@ -457,7 +457,7 @@ pipeline {
 				failure {
 					echo 'Build Release failure'
 					script {
-						testIssue = [fields: [ project: [key: '${workingJiraProject}'],
+						testIssue = [fields: [ project: [key: "${workingJiraProject}"],
 									summary: 'Jenkins Build Failure.',
 									description: "Jenkins Build Failure -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
 									priority: [name: 'Highest'],
