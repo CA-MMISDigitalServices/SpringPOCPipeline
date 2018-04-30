@@ -63,7 +63,7 @@ pipeline {
 					
                     sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dintegration-tests.skip=true -Dbuild.number=${targetVersion} clean package cobertura:cobertura -Dcobertura.report.format=xml"
 				
-                    def pom = readMavenPom file: '"${workingJenkinsDir}"/"${workingJob}"/"${workingProject}"/pom.xml'
+                    def pom = readMavenPom file: '${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml'
                     // get the current development version 
 //                   developmentArtifactVersion = "${pom.version}-${targetVersion}"
 //					echo 'developmentArtifactVersion:   ' + developmentArtifactVersion
