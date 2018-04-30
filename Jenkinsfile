@@ -3,9 +3,9 @@ pipeline {
     environment { 
         mvnHome = tool 'Maven_Config' 
 		
-		workingGitURL= 'https://github.com/rduart/XMLtoPDF.git'   
+		workingGitURL= 'https://github.com/CA-MMISDigitalServices/Dev.git'     
 		workingGitJiraURL ='https://github.com/CA-MMISDigitalServices/Dev.git' 
-		workingBranch= 'master'
+		workingBranch= 'errorTest'
 		workingPOM = '/var/lib/jenkins/workspace/jiraPL/XMLtoPDF/pom.xml'
 		workingJob= 'jiraPL'
 		workingProject= 'XMLtoPDF'
@@ -17,8 +17,8 @@ pipeline {
     stages {
     	stage('Preparation') {
 			steps {
-				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'errorTest'
-				git url: '$workingGitURL', branch: '$workingBranch'
+	//			git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'errorTest'
+				git url: $workingGitURL, branch: $workingBranch
 			}
 		} 
 		stage('Starting Build') {
