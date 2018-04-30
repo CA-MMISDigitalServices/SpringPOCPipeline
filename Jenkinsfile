@@ -273,7 +273,6 @@ pipeline {
 					scm: [$class: 'GitSCM', branches: [[name: '*/"${workingBranch}"']], 
 //					userRemoteConfigs: [[url: 'https://github.com/CA-MMISDigitalServices/Dev.git']]]])
 					userRemoteConfigs: [[url: "${workingGitURL}"]]]])
-			workingGitURL
 			}
 			post {
                 always {
