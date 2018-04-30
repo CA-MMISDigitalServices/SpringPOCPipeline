@@ -61,7 +61,7 @@ pipeline {
                     print 'target build version...'
                     print targetVersion
 					
-                    sh "'${mvnHome}/bin/mvn' -e --file /var/lib/jenkins/workspace/jiraPL/XMLtoPDF/pom.xml -Dintegration-tests.skip=true -Dbuild.number=${targetVersion} clean package cobertura:cobertura -Dcobertura.report.format=xml -B"
+                    sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dintegration-tests.skip=true -Dbuild.number=${targetVersion} clean package cobertura:cobertura -Dcobertura.report.format=xml -B"
 				
                     def pom = readMavenPom file: '/var/lib/jenkins/workspace/jiraPL/XMLtoPDF/pom.xml'
                     // get the current development version 
@@ -477,7 +477,7 @@ pipeline {
 					print pom.version
 					print version
 					
-					sh "'${mvnHome}/bin/mvn' -e --file /var/lib/jenkins/workspace/jiraPL/XMLtoPDF/pom.xml -Dtag=${version} -DreleaseVersion=${version} -DdevelopmentVersion=${version} release:prepare release:perform -B"
+					sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dtag=${version} -DreleaseVersion=${version} -DdevelopmentVersion=${version} release:prepare release:perform -B"
 				}
 			}
 			 post {
