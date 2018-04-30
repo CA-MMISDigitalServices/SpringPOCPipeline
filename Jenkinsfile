@@ -269,9 +269,11 @@ pipeline {
 				
 				step([$class: 'hudson.plugins.jira.JiraIssueUpdater', 
 					issueSelector: [$class: 'hudson.plugins.jira.selector.DefaultIssueSelector'], 
-					scm: [$class: 'GitSCM', branches: [[name: '*/master']], 
-					userRemoteConfigs: [[url: 'https://github.com/CA-MMISDigitalServices/Dev.git']]]])
-			
+//					scm: [$class: 'GitSCM', branches: [[name: '*/master']], 
+					scm: [$class: 'GitSCM', branches: [[name: '*/"${workingBranch}"']], 
+//					userRemoteConfigs: [[url: 'https://github.com/CA-MMISDigitalServices/Dev.git']]]])
+					userRemoteConfigs: [[url: "${workingGitURL}"]]]])
+			workingGitURL
 			}
 			post {
                 always {
