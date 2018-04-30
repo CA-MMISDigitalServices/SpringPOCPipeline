@@ -201,8 +201,6 @@ pipeline {
 						nexusInstanceId: 'NexusDemoServer', nexusRepositoryId: 'releases', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: '/var/lib/jenkins/workspace/SpringPOC/SpringPOC/target/springpoc-1.0.0-BUILD-SNAPSHOT.war']], 
 //						mavenCoordinate: [artifactId: 'SpringPOC-war', groupId: 'CA-MMIS.jenkins.ci.SpringPOC', packaging: 'war', version: '${BUILD_NUMBER}']]]])
 						mavenCoordinate: [artifactId: 'SpringPOC-war', groupId: 'CA-MMIS.jenkins.ci."${workingProject}"', packaging: 'war', version: '${BUILD_NUMBER}']]]])
-
-						workingProject
 			}
 			post {
                 always {
