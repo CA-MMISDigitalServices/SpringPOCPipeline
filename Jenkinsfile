@@ -18,7 +18,7 @@ pipeline {
     	stage('Preparation') {
 			steps {
 	//			git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'errorTest'
-				git url: '${env.workingGitURL}, branch: '${env.workingBranch}'
+				git url: '${workingGitURL}', branch: '${workingBranch}'
 			}
 		} 
 		stage('Starting Build') {
