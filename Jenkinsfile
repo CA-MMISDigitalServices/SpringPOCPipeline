@@ -7,11 +7,12 @@ pipeline {
 		workingGitJiraURL ='https://github.com/CA-MMISDigitalServices/Dev.git' 
 		workingBranch= 'errorTest'
 		workingPOM = '/var/lib/jenkins/workspace/TestPipeline/SpringPOC'
-		workingJob= 'jiraPL'
-		workingProject= 'XMLtoPDF'
-		workingSonarBinaries= '/var/lib/jenkins/workspace/jiraPL/XMLtoPDF/target/classes'
-		AWSCDapplicationName= 'SprinPOC'
-		AWSCDDeploymentGroupName= 'SprinPOCDG'
+		workingJob= 'TestPipeline'
+		workingProject= 'SpringPOC'
+		workingSonarBinaries= '/var/lib/jenkins/workspace/TestPipeline/SpringPOC/target/classes'
+		workingBaseDir= '/var/lib/jenkins/workspace/TestPipeline'
+		AWSCDapplicationName= 'SpringPOC'
+		AWSCDDeploymentGroupName= 'SpringPOCDG'
 		AWSCDSubDirectory= 'SpringPOC'
     }
     stages {
@@ -231,7 +232,7 @@ pipeline {
 		} 
 		stage('Maven Nexus Deploy') {
 			steps {
-				sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dintegration-tests.skip=true deploy"
+				sh "'${mvnHome}/bin/mvn' -X -B --file '${workingPOM}' -Dintegration-tests.skip=true deploy"
             }
 			post {
                 always {
@@ -374,13 +375,15 @@ pipeline {
 				echo "env.AWS_SECRET_ACCESS_KEY :" + env.AWS_SECRET_ACCESS_KEY
 				
 				step([$class: 'AWSCodeDeployPublisher', 
-						applicationName: 'SpringPOC', 
+//						applicationName: 'SpringPOC', 
+						applicationName: "${AWSCDapplicationName}",
 						awsAccessKey: env.AWS_ACCESS_KEY_ID,
 						awsSecretKey: env.AWS_SECRET_ACCESS_KEY, 
 						credentials: 'awsAccessKey', 
 						deploymentConfig: 'CodeDeployDefault.OneAtATime', 
 						deploymentGroupAppspec: false, 
-						deploymentGroupName: 'SpringPOCDG', 
+//						deploymentGroupName: 'SpringPOCDG', 
+						deploymentGroupName: "${AWSCDDeploymentGroupName}", 
 						deploymentMethod: 'deploy', 
 						excludes: '', 
 						iamRoleArn: '', 
@@ -392,7 +395,8 @@ pipeline {
 						region: 'us-gov-west-1', 
 						s3bucket: 'codedeploybucket', 
 						s3prefix: '', 
-						subdirectory: 'SpringPOC', 
+//						subdirectory: 'SpringPOC', 
+						subdirectory: "${AWSCDSubDirectory}'
 						versionFileName: '', 
 						waitForCompletion: true])
 			
