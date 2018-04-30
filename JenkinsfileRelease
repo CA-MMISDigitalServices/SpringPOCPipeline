@@ -438,11 +438,11 @@ pipeline {
 		stage('Build Release') {
 			steps {
 				script {
-					def targetVersion = getReleaseVersion()
+//					def targetVersion = getReleaseVersion()
 					def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
 					def version = pom.version.replace("-SNAPSHOT", ".${currentBuild.number}")
 					
-					print targetVersion
+//					print targetVersion
 					print pom.version
 					print version
 					
@@ -502,7 +502,7 @@ def getDevVersion() {
 
 
 def getReleaseVersion() {
-//    def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
+    def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
     def gitCommit = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
     def versionNumber;
     if (gitCommit == null) {
