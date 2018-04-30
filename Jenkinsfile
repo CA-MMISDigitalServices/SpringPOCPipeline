@@ -30,7 +30,9 @@ pipeline {
             steps {
 				script {
 //					input message: 'Approve deployment?'
-					sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC -Dmaven.test.failure.ignore clean install cobertura:cobertura -Dcobertura.report.format=xml"
+//					sh "'${mvnHome}/bin/mvn' -X -B --file /var/lib/jenkins/workspace/TestPipeline/SpringPOC -Dmaven.test.failure.ignore clean install cobertura:cobertura -Dcobertura.report.format=xml"
+					sh "'${mvnHome}/bin/mvn' -X -B --file '${workingPOM}' -Dmaven.test.failure.ignore clean install cobertura:cobertura -Dcobertura.report.format=xml"
+
 				}
             }
             post {
