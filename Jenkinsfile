@@ -73,10 +73,14 @@ pipeline {
 					' -Dsonar.host.url=http://158.96.16.211:9000/' + 
 					' -Dsonar.projectVersion=1.0' +
 					' -Dsonar.sourceEncoding=UTF-8' +
-					' -Dsonar.projectKey=TestPipeline' +
-					' -Dsonar.java.binaries=/var/lib/jenkins/workspace/TestPipeline/SpringPOC/target/classes' +
-					' -Dsonar.sources=SpringPOC/src' +
-					' -Dsonar.projectBaseDir=/var/lib/jenkins/workspace/TestPipeline'
+//					' -Dsonar.projectKey=TestPipeline' +
+					' -Dsonar.projectKey="${workingJob}"' +
+//					' -Dsonar.java.binaries=/var/lib/jenkins/workspace/TestPipeline/SpringPOC/target/classes' +
+					' -Dsonar.java.binaries="${workingSonarBinaries}"' +
+//					' -Dsonar.sources=SpringPOC/src' +
+					' -Dsonar.sources="${workingJob}"/src' +
+//					' -Dsonar.projectBaseDir=/var/lib/jenkins/workspace/TestPipeline'
+					' -Dsonar.projectBaseDir="${workingBaseDir}"'
 				}
 			}
 			post {
