@@ -446,21 +446,24 @@ pipeline {
 					print 'version + ${version}
 					
 					def (major, minor, increment, buildnum) = version.tokenize('.')
-					print ' After tokenize major + ${major}
+					echo  "After tokenize major + ${major}"
+
+//					echo "Here are the numbers; ${major}.${minor}.${build.number}"
 		
 					def releaseVersion = major + '.'+ minor + '.' + increment + '.' + buildnum
-					print 'releaseVersion : ' + ${version}
+					echo "releaseVersion : ' + ${version}"
 					
 					def tagVersion = major + '.' + minor + '.' + increment + '-RC'
-					print 'tagVersion : ' + ${tagVersion}
+					echo "tagVersion : ' + ${tagVersion}"
 					
 					def develoopmentVersion = increment as int
 					developmentVersion += 1 
+					echo "developmentVersion : ' + ${developmentVersion}"
 					
-					print 'releaseVersion : ' + ${version}
-					print 'tagVersion : ' + ${tagVersion}
-					print 'developmentVersion : ' + ${developmentVersion}
-					
+//					echo 'releaseVersion : ' + ${version}
+//					print 'tagVersion : ' + ${tagVersion}
+//					print 'developmentVersion : ' + ${developmentVersion}
+//					
 //					print targetVersion
 //					print pom.version
 //					print version
