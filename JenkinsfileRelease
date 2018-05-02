@@ -458,12 +458,14 @@ pipeline {
 					
 					def devVersion = increment as int
 					devVersion += 1 
+					
+					def developmentVersion = major + '.' + minor + '.' + devVersion
 					//Convert int to def
-					def developmentVersion = devVersion
+//					def developmentVersion = devVersion
 					echo "developmentVersion : ${developmentVersion}"
 					
 					
-					sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dtag=${tagVersionversion} -DreleaseVersion=${version} -DdevelopmentVersion=${developmentVersion} release:prepare release:perform -B"
+					sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dtag=${tagVersion} -DreleaseVersion=${version} -DdevelopmentVersion=${developmentVersion} release:prepare release:perform -B"
 				}
 			}
 			 post {
