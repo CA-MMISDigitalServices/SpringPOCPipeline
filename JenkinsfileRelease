@@ -450,7 +450,8 @@ pipeline {
 					
 					def tagVersion = major + '.' + minor + '.' + increment + '-RC'
 					
-					def developmentVersion = increment as int
+					
+					def develoopmentVersion = increment as int
 					developmentVersion += 1 
 					
 					print 'releaseVersion : ' + ${version}
