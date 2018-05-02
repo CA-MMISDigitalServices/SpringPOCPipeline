@@ -440,8 +440,11 @@ pipeline {
 		stage('Build Release') {
 			steps {
 				script {
-				
-				
+					
+					// Set git info
+					sh "git config --global user.email rduart@trinitytg.com"
+					sh "git config --global user.name rduart@trinitytg.com"
+
 					sh "git clean -f && git reset --hard origin/'${workingBranch}'"
 				
 //					def targetVersion = getReleaseVersion()
@@ -467,8 +470,7 @@ pipeline {
 					//Convert int to def
 //					def developmentVersion = devVersion
 					echo "developmentVersion : ${developmentVersion}"
-					
-					
+									
 					sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dtag=${tagVersion} -DreleaseVersion=${version} -DdevelopmentVersion=${developmentVersion} release:prepare release:perform -B"
 				}
 			}
