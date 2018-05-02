@@ -444,7 +444,7 @@ pipeline {
 					def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
 					def version = pom.version.replace("BUILD-SNAPSHOT", ".${currentBuild.number}")
 					
-					def (major, minor, increment, buildnum) = version.tokenize( '.' )
+					def (major, minor, increment, buildnum) = version.tokenize('.')
 		
 					def releaseVersion = major + '.'+ minor + '.' + increment + '.' + buildnum
 					
