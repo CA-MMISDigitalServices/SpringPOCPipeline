@@ -456,17 +456,12 @@ pipeline {
 					def tagVersion = major + '.' + minor + '.' + increment + '-RC'
 					echo "tagVersion :  ${tagVersion}"
 					
-					def develoopmentVersion = increment as int
-					developmentVersion += 1 
+					def devVersion = increment as int
+					devVersion += 1 
+					//Convert int to def
+					def developmentVersion = devVersion
 					echo "developmentVersion : ${developmentVersion}"
 					
-//					echo 'releaseVersion : ' + ${version}
-//					print 'tagVersion : ' + ${tagVersion}
-//					print 'developmentVersion : ' + ${developmentVersion}
-//					
-//					print targetVersion
-//					print pom.version
-//					print version
 					
 					sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dtag=${tagVersionversion} -DreleaseVersion=${version} -DdevelopmentVersion=${developmentVersion} release:prepare release:perform -B"
 				}
