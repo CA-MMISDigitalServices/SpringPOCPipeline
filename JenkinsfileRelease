@@ -63,7 +63,7 @@ pipeline {
                     print 'target build version...'
                     print targetVersion
 					
-                    sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dintegration-tests.skip=true -Dbuild.number=${targetVersion} clean package cobertura:cobertura -Dcobertura.report.format=xml"
+                    sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dintegration-tests.skip=true -Dbuild.number=${targetVersion} clean install cobertura:cobertura -Dcobertura.report.format=xml"
 				
                     def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
                     // get the current development version 
@@ -440,6 +440,10 @@ pipeline {
 		stage('Build Release') {
 			steps {
 				script {
+				
+				
+					sh "git clean -f && git reset --hard origin/'${workingBranch}'"
+				
 //					def targetVersion = getReleaseVersion()
 					def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
 					def version = pom.version.replace("-BUILD-SNAPSHOT", ".${currentBuild.number}")
