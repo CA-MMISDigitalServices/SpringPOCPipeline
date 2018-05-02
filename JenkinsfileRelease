@@ -443,22 +443,22 @@ pipeline {
 //					def targetVersion = getReleaseVersion()
 					def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
 					def version = pom.version.replace("BUILD-SNAPSHOT", ".${currentBuild.number}")
-					print 'version + ${version}
+					exho "version : ${version}"
 					
 					def (major, minor, increment, buildnum) = version.tokenize('.')
-					echo  "After tokenize major + ${major}"
+					echo  "After tokenize major ${major}"
 
 //					echo "Here are the numbers; ${major}.${minor}.${build.number}"
 		
 					def releaseVersion = major + '.'+ minor + '.' + increment + '.' + buildnum
-					echo "releaseVersion : ' + ${version}"
+					echo "releaseVersion : ${version}"
 					
 					def tagVersion = major + '.' + minor + '.' + increment + '-RC'
-					echo "tagVersion : ' + ${tagVersion}"
+					echo "tagVersion :  ${tagVersion}"
 					
 					def develoopmentVersion = increment as int
 					developmentVersion += 1 
-					echo "developmentVersion : ' + ${developmentVersion}"
+					echo "developmentVersion : ${developmentVersion}"
 					
 //					echo 'releaseVersion : ' + ${version}
 //					print 'tagVersion : ' + ${tagVersion}
