@@ -11,7 +11,7 @@ pipeline {
 		
 		// GitHub setup
 		workingGitURL= 'https://github.com/CA-MMISDigitalServices/Dev.git'     
-		workingBranch= 'master'
+		workingBranch= 'errorTest'
 		
 		//POM file locations for Maven
 		workingPOM = '/var/lib/jenkins/workspace/TestPipelineRelease/SpringPOC'
@@ -444,11 +444,24 @@ pipeline {
 					def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
 					def version = pom.version.replace("BUILD-SNAPSHOT", ".${currentBuild.number}")
 					
-//					print targetVersion
-					print pom.version
-					print version
+					def (major, minor, increment, buildnum) = version.tokenize( '.' )
+		
+					def releaseVersion = major + '.'+ minor + '.' + increment + '.' + buildnum
 					
-					sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dtag=${version} -DreleaseVersion=${version} -DdevelopmentVersion=${version} release:prepare release:perform -B"
+					def tagVersion = major + '.'+ minor + '.' + increment + '-RC'
+					
+					def developmentVersion = increment.toInteger()
+					developmentVersion = developmentVersion + 1
+					
+					print 'releaseVersion : ' + ${version}
+					print 'tagVersion : ' + ${tagVersion}
+					print 'developmentVersion : ' + ${developmentVersion}
+					
+//					print targetVersion
+//					print pom.version
+//					print version
+					
+					sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dtag=${tagVersionversion} -DreleaseVersion=${version} -DdevelopmentVersion=${developmentVersion} release:prepare release:perform -B"
 				}
 			}
 			 post {
