@@ -455,7 +455,7 @@ pipeline {
 					def (major, minor, increment, buildnum) = version.tokenize('.')
 					echo  "After tokenize major ${major}"
 
-//					echo "Here are the numbers; ${major}.${minor}.${build.number}"
+//					echo "Here are the numbers; ${major}.${minor}.${build.number}" 
 		
 					def releaseVersion = major + '.'+ minor + '.' + increment
 					echo "releaseVersion : ${releaseVersion}"
