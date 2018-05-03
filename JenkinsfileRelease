@@ -449,7 +449,7 @@ pipeline {
 				
 //					def targetVersion = getReleaseVersion()
 					def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
-					def version = pom.version.replace("-BUILD-SNAPSHOT", ".${currentBuild.number}")
+					def version = pom.version.replace("-SNAPSHOT", ".${currentBuild.number}")
 					echo "version : ${version}"
 					
 					def (major, minor, increment, buildnum) = version.tokenize('.')
@@ -457,8 +457,8 @@ pipeline {
 
 //					echo "Here are the numbers; ${major}.${minor}.${build.number}"
 		
-					def releaseVersion = major + '.'+ minor + '.' + increment + '.' + buildnum
-					echo "releaseVersion : ${version}"
+					def releaseVersion = major + '.'+ minor + '.' + increment
+					echo "releaseVersion : ${releaseVersion}"
 					
 					def tagVersion = major + '.' + minor + '.' + increment + '-RC'
 					echo "tagVersion :  ${tagVersion}"
@@ -471,7 +471,8 @@ pipeline {
 //					def developmentVersion = devVersion
 					echo "developmentVersion : ${developmentVersion}"
 									
-					sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dtag=${tagVersion} -DreleaseVersion=${version} -DdevelopmentVersion=${developmentVersion} release:prepare release:perform -B"
+//					sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dtag=${tagVersion} -DreleaseVersion=${version} -DdevelopmentVersion=${developmentVersion} release:prepare release:perform -B"
+					sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dtag=${tagVersion} -DreleaseVersion=${releaseVersion} release:prepare release:perform -B"
 				}
 			}
 			 post {
