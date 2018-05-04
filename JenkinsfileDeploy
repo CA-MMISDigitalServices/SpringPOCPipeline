@@ -43,11 +43,11 @@ pipeline {
                 // Run the maven build
                 script {
 				
-//					wget --user=admin --password=Tru$tn01 "http://158.96.16.218:8081/nexus/content/repositories/releases/com/demo/springpoc/1.0.1/springpoc-1.0.1.war"
+					sh "wget --user=admin --password= 'http://158.96.16.218:8081/nexus/content/repositories/releases/com/demo/springpoc/1.0.1/springpoc-1.0.1.war'"
                     				
-					sh "'${mvnHome}/bin/mvn' dependency:get -DremoteRepositories=http://158.96.16.218:8081/nexus/content/repositories/releases -DgroupId=com.demo -DartifactId=springpoc -Dversion=1.0.1 -Dpackaging=war -Dtransitive=false"
+//					sh "'${mvnHome}/bin/mvn' dependency:get -DremoteRepositories=http://158.96.16.218:8081/nexus/content/repositories/releases -DgroupId=com.demo -DartifactId=springpoc -Dversion=1.0.1 -Dpackaging=war -Dtransitive=false"
 
-					sh "'${mvnHome}/bin/mvn' dependency:copy -Dartifact=com.demo:springpoc:war:1.0.1 -DoutputDirectory=/var/lib/jenkins/workspace/TestPipelineDeploy"
+//					sh "'${mvnHome}/bin/mvn' dependency:copy -Dartifact=com.demo:springpoc:war:1.0.1 -DoutputDirectory=/var/lib/jenkins/workspace/TestPipelineDeploy"
 
 					
                 }
