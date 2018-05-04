@@ -45,7 +45,7 @@ pipeline {
 				
 //					wget --user=admin --password=Tru$tn01 "http://158.96.16.218:8081/nexus/content/repositories/releases/com/demo/springpoc/1.0.1/springpoc-1.0.1.war"
                     				
-					sh "'${mvnHome}/bin/mvn' dependency:get -DremoteRepositories=http://158.96.16.218:8081/nexus/content/repositories/releases -DgroupId=com.demo -DartifactId=springpoc -Dversion=1.0.1 -Dpackage=war -Dtransitive=false"
+					sh "'${mvnHome}/bin/mvn' dependency:get -DremoteRepositories=http://158.96.16.218:8081/nexus/content/repositories/releases -DgroupId=com.demo -DartifactId=springpoc -Dversion=1.0.1 -Dpackaging=war -Dtransitive=false"
 
                 }
 
