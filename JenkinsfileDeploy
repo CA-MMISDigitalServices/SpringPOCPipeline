@@ -47,6 +47,9 @@ pipeline {
                     				
 					sh "'${mvnHome}/bin/mvn' dependency:get -DremoteRepositories=http://158.96.16.218:8081/nexus/content/repositories/releases -DgroupId=com.demo -DartifactId=springpoc -Dversion=1.0.1 -Dpackaging=war -Dtransitive=false"
 
+					h "'${mvnHome}/bin/mvn' dependency:copy -Dartifact=com.demo:springpoc:war:1.0.1 -DoutputDirectory=/var/lib/jenkins/workspace/TestPipelineDeploy
+
+					
                 }
 
 			} 
