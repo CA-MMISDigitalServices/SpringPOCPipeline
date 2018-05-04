@@ -1,0 +1,111 @@
+pipeline {
+    // run on jenkins nodes that has no label
+    agent any
+    // global env variables
+    environment {
+	
+        EMAIL_RECIPIENTS = 'rduart@dhcs.ca.gov'
+		
+		// maven setup for Jenkins
+		mvnHome = tool 'Maven_Config' 
+		
+		// GitHub setup
+		workingGitURL= 'https://github.com/CA-MMISDigitalServices/Dev.git'     
+		workingBranch= 'errorTest'
+		
+		//POM file locations for Maven
+		workingPOM = '/var/lib/jenkins/workspace/TestPipelineRelease/SpringPOC'
+		
+		// Jenkins setup 
+		workingJob= 'TestPipelineRelease'
+		workingProject= 'SpringPOC'
+		workingJenkinsDir= '/var/lib/jenkins/workspace'
+		
+		// AWS code Deploy setup
+		AWSCDapplicationName= 'SpringPOC'
+		AWSCDDeploymentGroupName= 'SpringPOCDG'
+		AWSCDSubDirectory= 'SpringPOC'
+		
+		// Jira project setup
+		workingJiraProject ='PTP'
+		
+    }
+    stages {
+
+		stage('Preparation') {
+			steps {
+				echo 'ReleaseVersion ' + env.releaseVersion
+				
+//				git url: 'https://github.com/rduart/XMLtoPDF.git', branch: 'master'
+				
+				git url: "${workingGitURL}", branch: "${workingBranch}"
+				
+				//This git is for SSH the JenkinsPipelineID is the name for Git
+//				git url: "${workingGitURL}", credentialsId: 'JenkinsPipelineID', "${workingBranch}"
+				
+				sh "git clean -f && git reset --hard origin/'${workingBranch}'"
+			}
+		}
+		stage('Starting Production Deployment') {
+            steps {
+				slackSend (color: '#FFFF00', message: "STARTED Deployment: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+			}
+		} 
+        stage('Clean Build') {
+            steps {
+                // Run the maven build
+                script {
+				
+//				wget --user=admin --password=Tru$tn01 "http://158.96.16.218:8081/nexus/content/repositories/releases/com/demo/springpoc/1.0.1/springpoc-1.0.1.war"
+                    
+//                   echo 'Pulling...' + env.BRANCH_NAME
+//					
+//                    def targetVersion = getDevVersion()
+//					
+//                    print 'target build version...'
+ //                   print targetVersion
+//					
+					sh "'${mvnHome}/bin/mvn' dependency:get -DremoteRepositories=http://158.96.16.218:8081/nexus/content/repositories/releases -DgroupId=com.demo -DartifactId=springpoc -Dversion=1.0.1 -Dtransitive=false"
+					
+ //                   sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dintegration-tests.skip=true -Dbuild.number=${targetVersion} clean install cobertura:cobertura -Dcobertura.report.format=xml"
+//				
+ //                   def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
+  //                  // get the current development version 
+//                   developmentArtifactVersion = "${pom.version}-${targetVersion}"
+//					echo 'developmentArtifactVersion:   ' + developmentArtifactVersion
+ //                 print pom.version
+
+                }
+            }
+			 post {
+                always {
+                    echo 'Build Stage always'
+
+                }
+				failure {
+					echo 'Build Stage failure'
+					script {
+						testIssue = [fields: [ project: [key: "${workingJiraProject}"],
+									summary: 'Jenkins Build Failure.',
+									description: "Jenkins Build Failure -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+									priority: [name: 'Highest'],
+									issuetype: [name: 'Bug']]]
+
+//						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+//
+//						echo response.successful.toString()
+//						echo response.data.toString()
+//						
+//						slackSend (color: '#FFFF00', message: "Failed: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+
+					} 
+				}
+				success {
+					echo 'Build Stage Success'
+					slackSend (color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+				}	
+			} 
+        }
+	}
+}
+
