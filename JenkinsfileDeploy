@@ -38,17 +38,19 @@ pipeline {
 				
 //				git url: 'https://github.com/rduart/XMLtoPDF.git', branch: 'master'
 				
-				git url: "${workingGitURL}", branch: "${workingBranch}"
+//				git url: "${workingGitURL}", branch: "${workingBranch}"
 				
 				//This git is for SSH the JenkinsPipelineID is the name for Git
 //				git url: "${workingGitURL}", credentialsId: 'JenkinsPipelineID', "${workingBranch}"
 				
-				sh "git clean -f && git reset --hard origin/'${workingBranch}'"
+//				sh "git clean -f && git reset --hard origin/'${workingBranch}'"
 			}
 		}
-		stage('Starting Production Deployment') {
+		stage('Starting  Deployment') {
             steps {
-				slackSend (color: '#FFFF00', message: "STARTED Deployment: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+			
+				echo 'Starting  Deployment ' 
+//				slackSend (color: '#FFFF00', message: "STARTED Deployment: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 			}
 		} 
         stage('Clean Build') {
@@ -65,7 +67,7 @@ pipeline {
 //                    print 'target build version...'
  //                   print targetVersion
 //					
-					sh "'${mvnHome}/bin/mvn' dependency:get -DremoteRepositories=http://158.96.16.218:8081/nexus/content/repositories/releases -DgroupId=com.demo -DartifactId=springpoc -Dversion=1.0.1 -Dtransitive=false"
+					sh "'${mvnHome}/bin/mvn' dependency:get -DremoteRepositories=http://158.96.16.218:8081/nexus/content/repositories/releases -DgroupId=com.demo -DartifactId=springpoc -Dversion=1.0.1 -Dpackage=war -Dtransitive=false"
 					
  //                   sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dintegration-tests.skip=true -Dbuild.number=${targetVersion} clean install cobertura:cobertura -Dcobertura.report.format=xml"
 //				
@@ -84,13 +86,13 @@ pipeline {
                 }
 				failure {
 					echo 'Build Stage failure'
-					script {
-						testIssue = [fields: [ project: [key: "${workingJiraProject}"],
-									summary: 'Jenkins Build Failure.',
-									description: "Jenkins Build Failure -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
-									priority: [name: 'Highest'],
-									issuetype: [name: 'Bug']]]
-
+//					script {
+//						testIssue = [fields: [ project: [key: "${workingJiraProject}"],
+//									summary: 'Jenkins Build Failure.',
+//									description: "Jenkins Build Failure -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+//									priority: [name: 'Highest'],
+//									issuetype: [name: 'Bug']]]
+//
 //						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
 //
 //						echo response.successful.toString()
@@ -102,7 +104,7 @@ pipeline {
 				}
 				success {
 					echo 'Build Stage Success'
-					slackSend (color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+//					slackSend (color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 				}	
 			} 
         }
