@@ -1,0 +1,58 @@
+#!groovy
+
+pipeline {
+  agent none
+	environment { 
+        mvnHome = tool 'apache-maven-3.5.3'
+    }
+	stages {
+  
+		stage('Preparation') {
+			steps {
+				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'docker'
+			}
+		}
+/*		stage('Maven Install') {
+			agent {
+				docker {
+					image 'maven:3.5.0'
+				}
+			}
+			steps {
+				sh 'mvn clean install'
+			}
+		} */
+		stage('Build War') {
+            steps {
+				sh "'${mvnHome}/bin/mvn' -X -B --file D:/Software/Install/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dmaven.test.failure.ignore clean install"
+                }
+            post {
+                always {
+                    echo Build War always'
+                }
+				failure {
+					echo Build War failure'
+				}
+				success {
+					echo Build War success'
+				}
+            }
+        }
+		stage('Docker Build') {
+			agent any
+			steps {
+				echo 'Docker Build'
+//				sh 'docker build -t springpoc .'
+			}	
+		}
+/*		stage('Docker Push') {
+			agent any
+			steps {
+				withCredentials([usernamePassword(credentialsId: 'dockerHub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
+					sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPassword}"
+					sh 'docker push shanem/spring-petclinic:latest'
+				}
+			}
+		}	 */
+	}
+}
