@@ -8,10 +8,10 @@ pipeline {
 		workingBranch= 'docker'
 		
 		//POM file locations for Maven
-		workingPOM = '/var/lib/jenkins/workspace/TestPipelineDeploy/SpringPOC'
+		workingPOM = '/var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC'
 		
 		// Jenkins setup 
-		workingJob= 'TestPipelineDeploy'
+		workingJob= 'TestPipelineDocker'
 		workingProject= 'SpringPOC'
 		workingJenkinsDir= '/var/lib/jenkins/workspace'
 		
