@@ -1,7 +1,7 @@
 pipeline {
   agent any
 	environment { 
-        mvnHome = tool 'apache-maven-3.5.3'
+        mvnHome = tool 'Maven_Config'
     }
 	stages {
 		stage('Preparation') {
