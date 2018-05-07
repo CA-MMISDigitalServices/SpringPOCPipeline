@@ -26,13 +26,13 @@ pipeline {
                 }
             post {
                 always {
-                    echo Build War always'
+                    echo 'Build War always'
                 }
 				failure {
-					echo Build War failure'
+					echo 'Build War failure'
 				}
 				success {
-					echo Build War success'
+					echo 'Build War success'
 				}
             }
         }
