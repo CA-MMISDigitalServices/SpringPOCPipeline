@@ -51,7 +51,7 @@ pipeline {
 			steps {
 				echo 'Docker Build'
 //				sh 'docker build -f /var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC/Dockerfile  -t springpoc .'
-				sh 'docker build -f /SpringPOC/Dockerfile  -t springpoc .'
+				sh 'docker build -f TestPipelineDocker/SpringPOC/Dockerfile  -t springpoc .'
 			}	
 		}
 /*		stage('Docker Push') {
