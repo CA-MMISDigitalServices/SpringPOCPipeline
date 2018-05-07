@@ -2,16 +2,38 @@ pipeline {
   agent any
 	environment { 
         mvnHome = tool 'Maven_Config'
+		
+		// GitHub setup
+		workingGitURL= 'https://github.com/CA-MMISDigitalServices/Dev.git'     
+		workingBranch= 'docker'
+		
+		//POM file locations for Maven
+		workingPOM = '/var/lib/jenkins/workspace/TestPipelineDeploy/SpringPOC'
+		
+		// Jenkins setup 
+		workingJob= 'TestPipelineDeploy'
+		workingProject= 'SpringPOC'
+		workingJenkinsDir= '/var/lib/jenkins/workspace'
+		
+		// AWS code Deploy setup
+		AWSCDapplicationName= 'SpringPOC'
+		AWSCDDeploymentGroupName= 'SpringPOCDG'
+		AWSCDSubDirectory= 'SpringPOC'
+		
+		// Jira project setup
+		workingJiraProject ='PTP'
     }
 	stages {
 		stage('Preparation') {
 			steps {
-				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'docker'
+//				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'docker'
+				git url: "${workingGitURL}", branch: "${workingBranch}"
 			}
 		}
 		stage('Build War') {
             steps {
-				sh "'${mvnHome}/bin/mvn' -X -B --file D:/Software/Install/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dmaven.test.failure.ignore clean install"
+//				sh "'${mvnHome}/bin/mvn' -X -B --file D:/Software/Install/jenkins/workspace/TestPipeline/SpringPOC/pom.xml -Dmaven.test.failure.ignore clean install"
+				sh "'${mvnHome}/bin/mvn' -X -B --file '${workingPOM}' -Dmaven.test.failure.ignore clean install cobertura:cobertura -Dcobertura.report.format=xml"
                 }
             post {
                 always {
