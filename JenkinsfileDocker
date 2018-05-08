@@ -47,22 +47,22 @@ pipeline {
 				}
             }
         }
-		stage('Docker Build') {
+		stage('Docker Build Image') {
 			steps {
 				echo 'Docker Build'
 				sh "pwd"
-//				sh 'docker build -f /var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC/Dockerfile  -t springpoc .'
-//				sh 'docker build -f SpringPOC/Dockerfile  -t springpoc .
 				sh 'docker build -f SpringPOC/Dockerfile  -t springpoc /var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC'
 			}	
 		}
-/*		stage('Docker Push') {
+		stage('Docker Push') {
 			steps {
 				withCredentials([usernamePassword(credentialsId: 'dockerHub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
+					echo ' hubuser :' + ${env.dockerHubUser} 
+					echo ' hubuser :' + ${env.dockerHubPassword} 
 					sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPassword}"
-					sh 'docker push shanem/spring-petclinic:latest'
+					sh 'docker push trinitytg/cammis/springpoc:latest'
 				}
 			}
-		}	 */
+		}	
 	}
 }
