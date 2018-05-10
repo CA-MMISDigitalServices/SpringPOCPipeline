@@ -49,9 +49,23 @@ pipeline {
         }
 		stage('Docker Build Image') {
 			steps {
-				echo 'Docker Build'
-				sh "pwd"
-				sh 'docker build -f SpringPOC/Dockerfile  -t trinitytg/springpoc /var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC'
+				script {
+					echo 'Docker Build'
+					sh "pwd" 
+				
+					// Setup version tag.
+					def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
+					def version = pom.version.replace("-SNAPSHOT", ".${currentBuild.number}")
+					echo "version : ${version}"
+					
+					def (major, minor, increment, buildnum) = version.tokenize('.')
+					echo  "After tokenize major ${major}"
+
+					def tagVersion = major + '.' + minor + '.' + increment + '.SNAPSHOT'
+					echo "tagVersion :  ${tagVersion}"
+				
+					sh "docker build -f SpringPOC/Dockerfile  -t trinitytg/springpoc:${tagVersion} /var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC"
+				}
 			}	
 		}
 		stage('Docker Push') {
