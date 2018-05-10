@@ -80,7 +80,7 @@ pipeline {
 //						sh "sed -i -e 's/dummyTag/${tagVersion}/g' '$_cdir/startup.sh'"
 					
 						sh "docker login -u ${env.dockerhubUser} -p ${env.dockerhubPassword}"
-						sh 'docker push trinitytg/springpoc:${tagVersion}'
+						sh "docker push trinitytg/springpoc:${tagVersion}"
 					}
 				}
 			}
