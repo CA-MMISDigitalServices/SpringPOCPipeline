@@ -5,7 +5,7 @@ pipeline {
 		
 		// GitHub setup
 		workingGitURL= 'https://github.com/CA-MMISDigitalServices/Dev.git'     
-		workingBranch= 'docker'
+		workingBranch= 'dockerDeploy'
 		
 		//POM file locations for Maven
 		workingPOM = '/var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC'
@@ -16,8 +16,8 @@ pipeline {
 		workingJenkinsDir= '/var/lib/jenkins/workspace'
 		
 		// AWS code Deploy setup
-		AWSCDapplicationName= 'SpringPOC'
-		AWSCDDeploymentGroupName= 'SpringPOCDG'
+		AWSCDapplicationName= 'SpringPOCDocker'
+		AWSCDDeploymentGroupName= 'SpringPOCDockerDG'
 		AWSCDSubDirectory= 'SpringPOC'
 		
 		// Jira project setup
@@ -57,12 +57,90 @@ pipeline {
 		stage('Docker Push') {
 			steps {
 				withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'dockerhubPassword', usernameVariable: 'dockerhubUser')]) {
-					echo "hubuser : ${env.dockerhubUser}" 
-					echo "hubpass : ${env.dockerhubPassword}" 
-					sh "docker login -u ${env.dockerhubUser} -p ${env.dockerhubPassword}"
-					sh 'docker push trinitytg/springpoc:latest'
+					script {
+						echo "hubuser : ${env.dockerhubUser}" 
+						echo "hubpass : ${env.dockerhubPassword}" 
+					
+						// Setup version tag.
+						def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
+						def version = pom.version.replace("-SNAPSHOT", ".${currentBuild.number}")
+						echo "version : ${version}"
+					
+						def (major, minor, increment, buildnum) = version.tokenize('.')
+						echo  "After tokenize major ${major}"
+
+						def tagVersion = major + '.' + minor + '.' + increment + '-SNAPSHOT'
+						echo "tagVersion :  ${tagVersion}"
+						
+						_cdir="${workingJenkinsDir}/${workingJob}/${workingProject}/scripts"
+						echo "working dir is : $_cdir"
+					
+//						sh "sed -i -e 's/dummyUser/${env.dockerhubUser}/g' '$_cdir/startup.sh'"
+//						sh "sed -i -e 's/dummyPass/${env.dockerhubPassword}/g' '_cdir/startup.sh'"
+//						sh "sed -i -e 's/dummyTag/${tagVersion}/g' '$_cdir/startup.sh'"
+					
+						sh "docker login -u ${env.dockerhubUser} -p ${env.dockerhubPassword}"
+						sh 'docker push trinitytg/springpoc:${tagVersion}'
+					}
 				}
 			}
-		}	
+		}
+		stage('AWS Code Deploy') {
+			steps {
+				echo 'AWS Code Deploy'
+				echo "env.AWS_ACCESS_KEY_ID :" + env.AWS_ACCESS_KEY_ID
+				echo "env.AWS_SECRET_ACCESS_KEY :" + env.AWS_SECRET_ACCESS_KEY
+				
+				step([$class: 'AWSCodeDeployPublisher', 
+						applicationName: "${AWSCDapplicationName}",
+						awsAccessKey: env.AWS_ACCESS_KEY_ID,
+						awsSecretKey: env.AWS_SECRET_ACCESS_KEY, 
+						credentials: 'awsAccessKey', 
+						deploymentConfig: 'CodeDeployDefault.OneAtATime', 
+						deploymentGroupAppspec: false, 
+						deploymentGroupName: "${AWSCDDeploymentGroupName}", 
+						deploymentMethod: 'deploy', 
+						excludes: '', 
+						iamRoleArn: '', 
+						includes: '**', 
+						pollingFreqSec: 15, 
+						pollingTimeoutSec: 300, 
+						proxyHost: '', 
+						proxyPort: 0, 
+						region: 'us-gov-west-1', 
+						s3bucket: 'codedeploybucket', 
+						s3prefix: '', 
+						subdirectory: "${AWSCDSubDirectory}",
+						versionFileName: '', 
+						waitForCompletion: true])
+			
+			}
+			post {
+                always {
+					echo 'AWS Code Deploy'
+                }	
+				failure {
+					script {
+						echo 'AWS Code Deploy  failure'
+						testIssue = [fields: [ project: [key: "${workingJiraProject}"],
+									summary: 'Jenkins Build Failure.',
+									description: "Jenkins Build Failed - AWS Code Deploy Failed-  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+									priority: [name: 'Highest'],
+									issuetype: [name: 'Bug']]]
+
+						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+						echo response.successful.toString()
+						echo response.data.toString()
+						
+						slackSend (color: '#FFFF00', message: "Failed: Job - AWS Code Deploy Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+					}
+				}
+				success {
+					echo 'AWS Code Deploy Success'
+					slackSend (color: '#00FF00', message: "Code Deploy SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+				}
+			}		
+		}		
 	}
 }
