@@ -79,7 +79,7 @@ pipeline {
 //						sh "sed -i -e 's/dummyPass/${env.dockerhubPassword}/g' '_cdir/startup.sh'"
 //						sh "sed -i -e 's/dummyTag/${tagVersion}/g' '$_cdir/startup.sh'"
 
-						sh "docker commit -m 'Updated springpoc' -a 'Jenkins Build' trinitytg/springpoc:${tagVersion}"
+						sh "docker commit -m 'Updated springpoc' -a 'Jenkins Build' springpoc trinitytg/springpoc:${tagVersion}"
 					
 						sh "docker login -u ${env.dockerhubUser} -p ${env.dockerhubPassword}"
 						
