@@ -75,7 +75,7 @@ pipeline {
 					
 						// Remove all docker images from local repos.
 						
-			//		    sh "docker rmi '$(docker images -q)'"
+			//		    sh 'docker rmi $(docker images -q)'
 						
 						echo "hubuser : ${env.dockerhubUser}" 
 						echo "hubpass : ${env.dockerhubPassword}" 
@@ -125,7 +125,7 @@ pipeline {
 						deploymentGroupAppspec: false, 
 						deploymentGroupName: "${AWSCDDeploymentGroupName}", 
 						deploymentMethod: 'deploy', 
-						excludes: 'target**, src/**, .settings/**', 
+						excludes: 'target/**, src/**, .settings/**', 
 						iamRoleArn: '', 
 						includes: '**', 
 						pollingFreqSec: 15, 
