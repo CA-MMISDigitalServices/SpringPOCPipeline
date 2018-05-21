@@ -74,7 +74,8 @@ pipeline {
 					script {
 					
 						// Remove all docker images from local repos.
-					    sh "docker rmi $(docker images -q)"
+						
+					    sh "docker rmi '$(docker images -q)'"
 						
 						echo "hubuser : ${env.dockerhubUser}" 
 						echo "hubpass : ${env.dockerhubPassword}" 
