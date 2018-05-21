@@ -120,7 +120,7 @@ pipeline {
 						deploymentGroupAppspec: false, 
 						deploymentGroupName: "${AWSCDDeploymentGroupName}", 
 						deploymentMethod: 'deploy', 
-						excludes: '**/target/*, **/src/*, **/settings/*', 
+						excludes: 'target/*, src/*, .settings/*', 
 						iamRoleArn: '', 
 						includes: '**', 
 						pollingFreqSec: 15, 
