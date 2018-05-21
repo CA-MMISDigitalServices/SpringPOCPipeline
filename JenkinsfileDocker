@@ -120,7 +120,7 @@ pipeline {
 						deploymentGroupAppspec: false, 
 						deploymentGroupName: "${AWSCDDeploymentGroupName}", 
 						deploymentMethod: 'deploy', 
-						excludes: '', 
+						excludes: 'SpringPOC/target/*, SpringPOC/src/*, SpringPOC/settings/*', 
 						iamRoleArn: '', 
 						includes: '**', 
 						pollingFreqSec: 15, 
