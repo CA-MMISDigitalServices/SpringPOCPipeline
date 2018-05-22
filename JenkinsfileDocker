@@ -55,6 +55,18 @@ pipeline {
 				script {
 					echo 'Docker Build'
 					sh "pwd" 
+					
+					
+					// Remove all docker images from local repos.
+					def COUNT = sh returnStdout: true, script: "docker images | grep ${workingImageName} | wc -l"
+
+					echo "Image count : ${COUNT}" 
+				    
+					def intValue = COUNT.toInteger()
+					if ((intValue > 0)) {
+						echo 'Images exist -- Removing Images'
+					    sh 'docker rmi $(docker images -q)'
+					}
 				
 					// Setup version tag.
 					def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
@@ -76,17 +88,6 @@ pipeline {
 				withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'dockerhubPassword', usernameVariable: 'dockerhubUser')]) {
 					script {
 					
-						// Remove all docker images from local repos.
-						def COUNT = sh returnStdout: true, script: "docker images | grep ${workingImageName} | wc -l"
-
-						echo "Image count : ${COUNT}" 
-				    
-						def intValue = COUNT.toInteger()
-						if ((intValue > 0)) {
-							echo 'Images exist -- Removing Images'
-					    	sh 'docker rmi $(docker images -q)'
-						}
-						
 						echo "hubuser : ${env.dockerhubUser}" 
 						echo "hubpass : ${env.dockerhubPassword}" 
 					
