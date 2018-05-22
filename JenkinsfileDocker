@@ -22,6 +22,9 @@ pipeline {
 		
 		// Jira project setup
 		workingJiraProject ='PTP'
+		
+		// Docker
+		workingImageName='springpoc'
     }
 	stages {
 		stage('Preparation') {
@@ -74,8 +77,15 @@ pipeline {
 					script {
 					
 						// Remove all docker images from local repos.
-						
-			//		    sh 'docker rmi $(docker images -q)'
+						def COUNT = sh returnStdout: true, script: "docker images | grep ${workingImageName} | wc -l"
+
+						echo "Image count : ${COUNT}" 
+				    
+						def intValue = COUNT.toInteger()
+						if ((intValue > 0)) {
+							echo 'Images exist -- Removing Images'
+					    	sh 'docker rmi $(docker images -q)'
+						}
 						
 						echo "hubuser : ${env.dockerhubUser}" 
 						echo "hubpass : ${env.dockerhubPassword}" 
@@ -94,6 +104,7 @@ pipeline {
 						_cdir="${workingJenkinsDir}/${workingJob}/${workingProject}/scripts"
 						echo "working dir is : $_cdir"
 					
+						// Replace contents for startup script.
 //						sh "sed -i -e 's/dummyUser/${env.dockerhubUser}/g' '$_cdir/startup.sh'"
 //						sh "sed -i -e 's/dummyPass/${env.dockerhubPassword}/g' '_cdir/startup.sh'"
 //						sh "sed -i -e 's/dummyTag/${tagVersion}/g' '$_cdir/startup.sh'"
