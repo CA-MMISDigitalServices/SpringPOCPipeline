@@ -27,7 +27,7 @@ pipeline {
 		workingImageName='springpoc'
 		
 		// email 
-		workingEmailRecipients = 'randy.duart@dhcs.ca.gov, mike.sisler@dhcs.ca.gov'
+		workingEmailRecipients = 'randy.duart@dhcs.ca.gov'
     }
 	stages {
 		stage('Preparation') {
