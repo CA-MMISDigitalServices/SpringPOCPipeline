@@ -25,6 +25,9 @@ pipeline {
 		
 		// Docker
 		workingImageName='springpoc'
+		
+		// email 
+		workingEmailRecipients = 'randy.duart@dhcs.ca.gov, mike.sisler@dhcs.ca.gov'
     }
 	stages {
 		stage('Preparation') {
@@ -189,7 +192,7 @@ pipeline {
 				}	
 			}
 		}  
-		stage('Maven Nexus Deploy') {
+/*		stage('Maven Nexus Deploy') {
 			steps {
 				sh "'${mvnHome}/bin/mvn' -X -B --file '${workingPOM}' -Dintegration-tests.skip=true deploy"
             }
@@ -219,7 +222,7 @@ pipeline {
 					echo 'Maven Nexus Deploy Success'
 				}	
 			}
-		} 
+		}  */
 		stage('Jira Update Issues') {
 			steps {
 				echo 'Jira Update Issues'
@@ -438,13 +441,54 @@ pipeline {
 						echo response.data.toString()
 						
 						slackSend (color: '#FFFF00', message: "Failed: Job - AWS Code Deploy Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+						
+						sendEmail("Failed");
 					}
 				}
 				success {
 					echo 'AWS Code Deploy Success'
 					slackSend (color: '#00FF00', message: "Code Deploy SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+					
+					sendEmail("Successful");
 				}
 			}		
 		}		
 	}
+}
+
+
+def getChangeString() {
+    MAX_MSG_LEN = 100
+    def changeString = ""
+
+    echo "Gathering SCM changes"
+    def changeLogSets = currentBuild.changeSets
+    for (int i = 0; i < changeLogSets.size(); i++) {
+        def entries = changeLogSets[i].items
+        for (int j = 0; j < entries.length; j++) {
+            def entry = entries[j]
+            truncated_msg = entry.msg.take(MAX_MSG_LEN)
+            changeString += " - ${truncated_msg} [${entry.author}]\n"
+        }
+    }
+
+    if (!changeString) {
+        changeString = " - No new changes"
+    }
+    return changeString
+}
+
+def sendEmail(status) {
+    mail(
+           to: "$workingEmailRecipients",
+           subject: "Build $BUILD_NUMBER - " + status + " (${currentBuild.fullDisplayName})",
+           body: "Changes:\n " + getChangeString() + "\n\n Check console output at: $BUILD_URL/console" + "\n")
+			
+	emailext (
+		attachLog: true,
+		to: "$workingEmailRecipients",
+		subject: Build $BUILD_NUMBER - " + status + " (${currentBuild.fullDisplayName})",
+		body: "Changes:\n " + getChangeString() + "\n\n Check console output at: $BUILD_URL/console" + "\n")
+
+			
 }
