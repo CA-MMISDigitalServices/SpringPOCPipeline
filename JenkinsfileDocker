@@ -479,15 +479,15 @@ def getChangeString() {
 }
 
 def sendEmail(status) {
-    mail(
+ /*   mail(
            to: "${workingEmailRecipients}",
            subject: "Build ${env.BUILD_NUMBER} - " + status + " (${env.BUILD_NUMBER})",
            body: "Changes:\n " + getChangeString() + "\n\n Check console output at: ${env.BUILD_URL}" + "\n")
-			
+*/			
 	emailext (
 		attachLog: true,
 		to: "${workingEmailRecipients}",
-		subject: Build ${env.BUILD_NUMBER} - " + status + " (${env.BUILD_NUMBER})",
+		subject: "Build ${env.BUILD_NUMBER} - " + status + " ${env.BUILD_NUMBER}",
 		body: "Changes:\n " + getChangeString() + "\n\n Check console output at: ${env.BUILD_URL}" + "\n")
 
 			
