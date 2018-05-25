@@ -351,6 +351,17 @@ pipeline {
 				
 					sh "docker build -f SpringPOC/Dockerfile  -t trinitytg/springpoc:${tagVersion} /var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC"
 				}
+			}
+			post {
+                always {
+					echo 'Docker Build'
+                }
+				failure {	
+					echo 'Failure Docker Build'				
+				}
+				success {
+					echo 'Success Docker Build'
+				}
 			}	
 		}
 		stage('Docker Push') {
@@ -391,6 +402,17 @@ pipeline {
 					}
 				}
 			}
+			post {
+                always {
+					echo 'Docker Push'
+                }
+				failure {	
+					echo 'Failure Docker Push'				
+				}
+				success {
+					echo 'Success Docker Push'
+				}
+			}	
 		}
 		stage('AWS Code Deploy') {
 			steps {
