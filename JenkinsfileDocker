@@ -112,7 +112,7 @@ pipeline {
 		} 
     	stage('SonarQube Quality Gate') { 
 			steps {
-//				node('master'){ 
+				node('master'){ 
 					script {
 						timeout(time: 1, unit: 'HOURS') { 
 							echo '************ Inside Quality Gate'
@@ -137,7 +137,7 @@ pipeline {
 							}
 						}
 					}
-//		}
+		}
 			}
 			post {
                 always {
@@ -264,7 +264,7 @@ pipeline {
 				node('DependencyCheckNode'){ 
 					echo 'Security Dependency Check'
 					dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
-					dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
+//			dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
 				}
 			}
 			post {
@@ -293,7 +293,7 @@ pipeline {
 				}
 			}
 		}
-/*	stage('Security Dependency Publisher') {
+	stage('Security Dependency Publisher') {
 			steps {
 				echo 'Security Dependency Check'
 				dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
@@ -323,7 +323,7 @@ pipeline {
 					echo 'Security Dependency Publisher Success'
 				}
 			}
-		} */
+		} 
 		stage('Docker Build Image') {
 			steps {
 				script {
