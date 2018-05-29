@@ -517,5 +517,4 @@ def sendEmail(status) {
 		body: "Changes:\n " + getChangeString() + "\n\n Check console output at: ${env.BUILD_URL}" + "\n")
 
 			
-	}
 }
