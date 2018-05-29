@@ -261,8 +261,11 @@ pipeline {
 		} 
 		stage('Security Dependency Check') {
 			steps {
-				echo 'Security Dependency Check'
-				dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
+				node('DependencyCheckNode'){ 
+					echo 'Security Dependency Check'
+					dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
+					dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
+					}
 			}
 			post {
                 always {
@@ -290,7 +293,7 @@ pipeline {
 				}
 			}
 		}
- 		stage('Security Dependency Publisher') {
+/*	stage('Security Dependency Publisher') {
 			steps {
 				echo 'Security Dependency Check'
 				dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
@@ -320,7 +323,7 @@ pipeline {
 					echo 'Security Dependency Publisher Success'
 				}
 			}
-		}		
+		} */
 		stage('Docker Build Image') {
 			steps {
 				script {
@@ -464,14 +467,14 @@ pipeline {
 						
 						slackSend (color: '#FFFF00', message: "Failed: Job - AWS Code Deploy Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 						
-						sendEmail("Failed");
+//						sendEmail("Failed");
 					}
 				}
 				success {
 					echo 'AWS Code Deploy Success'
 					slackSend (color: '#00FF00', message: "Code Deploy SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 					
-					sendEmail("Successful");
+//					sendEmail("Successful");
 				}
 			}		
 		}		
@@ -514,4 +517,4 @@ def sendEmail(status) {
 		body: "Changes:\n " + getChangeString() + "\n\n Check console output at: ${env.BUILD_URL}" + "\n")
 
 			
-}
+	}
