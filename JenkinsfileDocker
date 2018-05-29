@@ -476,7 +476,48 @@ pipeline {
 //					sendEmail("Successful");
 				}
 			}		
-		}		
+		}
+		stage('Performance Testing') {
+			steps {
+				node('DependencyCheckNode'){ 
+					echo 'Performance Testing'
+					sh "/var/lib/apache-jmeter-4.0/bin/jmeter -n -j jmeter.save.saveservice.output_format=xml -t /var/lib/apache-jmeter-4.0/TTGUIScript.jmx -l /var/lib/jenkins/workspace/JMeter/TTGUILog.jtl"
+					}
+			}
+			post {
+                always {
+					echo 'Performance Testing Check'
+                }	
+				failure {
+					echo 'Performance TestingCheck'
+					sendJira("Unit Test Conditions Failed")
+				}
+				success {
+					echo 'Performance Testing Check Success'
+				}
+			}
+		}
+		stage('Performance Testing Report') {
+			steps {
+				node('DependencyCheckNode'){ 
+					echo 'Performance Testing Report'
+					
+					perfReport modePerformancePerTestCase: true, modeThroughput: true, percentiles: '0,50,90,100', sourceDataFiles: '/var/lib/jenkins/workspace/JMeter/TTGUILog.jtl'
+					}
+			}
+			post {
+                always {
+					echo 'Performance Testing Report Check'
+                }	
+				failure {
+					echo 'Performance Testing Report Check'
+					sendJira("Performance Test report Failure")
+				}
+				success {
+					echo 'Performance Testing Report Check Success'
+				}
+			}
+		}				
 	}
 }
 
@@ -519,7 +560,7 @@ def sendJira(message){
 	echo 'Send Jira Message'
 	testIssue = [fields: [ project: [key: "${workingJiraProject}"],
 			summary: 'Jenkins Build Failure.',
-			description: "Jenkins -  " + message + " " + "Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+			description: "Jenkins -  " + message + " - " + "Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
 			priority: [name: 'Highest'],
 			issuetype: [name: 'Bug']]]
 
@@ -528,6 +569,6 @@ def sendJira(message){
 	echo response.successful.toString()
 	echo response.data.toString()
 						
-	slackSend (color: '#FFFF00', message: "Failed: " + message + " " + "'${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'")
+	slackSend (color: '#FFFF00', message: "Failed: " + message + " - " + "'${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'")
 }
 
