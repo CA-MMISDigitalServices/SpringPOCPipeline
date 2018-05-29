@@ -265,7 +265,7 @@ pipeline {
 					echo 'Security Dependency Check'
 					dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
 					dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
-					}
+				}
 			}
 			post {
                 always {
@@ -512,7 +512,7 @@ def sendEmail(status) {
 	emailext (
 		attachLog: true,
 		to: "${workingEmailRecipients}",
-		from: "Jenkins.Admin@dhcs.ca.gov"
+		from: "Jenkins.Admin@dhcs.ca.gov",
 		subject: "Build ${env.BUILD_NUMBER} - " + status + " ${env.BUILD_NUMBER}",
 		body: "Changes:\n " + getChangeString() + "\n\n Check console output at: ${env.BUILD_URL}" + "\n")
 
