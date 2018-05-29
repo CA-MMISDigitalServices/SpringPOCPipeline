@@ -32,7 +32,6 @@ pipeline {
 	stages {
 		stage('Preparation') {
 			steps {
-//				git url: 'https://github.com/CA-MMISDigitalServices/Dev.git', branch: 'docker'
 				git url: "${workingGitURL}", branch: "${workingBranch}"
 			}
 		}
@@ -173,6 +172,7 @@ pipeline {
 				}
 				unstable {
 					echo 'unstable'
+					sendJira("Unit Test Conditions Failed")
 				}
             }
         } 
@@ -185,7 +185,7 @@ pipeline {
                     echo 'Code Coverage Report  Done'
                 }
 				failure {
-					echo 'Code Coverage Report  failure'
+					echo 'Code Coverage Report failure'
 				}
 				success {
 					echo 'Code Coverage Report Success'
@@ -264,7 +264,6 @@ pipeline {
 				node('DependencyCheckNode'){ 
 					echo 'Security Dependency Check'
 					dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
-//			dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
 				}
 			}
 			post {
@@ -504,17 +503,31 @@ def getChangeString() {
 }
 
 def sendEmail(status) {
- /*   mail(
-           to: "${workingEmailRecipients}",
-           subject: "Build ${env.BUILD_NUMBER} - " + status + " (${env.BUILD_NUMBER})",
-           body: "Changes:\n " + getChangeString() + "\n\n Check console output at: ${env.BUILD_URL}" + "\n")
-*/			
+ 		
 	emailext (
-		attachLog: true,
-		to: "${workingEmailRecipients}",
-		from: "Jenkins.Admin@dhcs.ca.gov",
-		subject: "Build ${env.BUILD_NUMBER} - " + status + " ${env.BUILD_NUMBER}",
-		body: "Changes:\n " + getChangeString() + "\n\n Check console output at: ${env.BUILD_URL}" + "\n")
+			attachLog: true,
+			to: "${workingEmailRecipients}",
+			from: "Jenkins.Admin@dhcs.ca.gov",
+			subject: "Build ${env.BUILD_NUMBER} - " + status + " ${env.BUILD_NUMBER}",
+			body: "Changes:\n " + getChangeString() + "\n\n Check console output at: ${env.BUILD_URL}" + "\n")
 
 			
 }
+
+def sendJira(message){
+
+	echo 'Send Jira Message'
+	testIssue = [fields: [ project: [key: "${workingJiraProject}"],
+			summary: 'Jenkins Build Failure.',
+			description: "Jenkins -  " + message + " " + "Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+			priority: [name: 'Highest'],
+			issuetype: [name: 'Bug']]]
+
+	response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+	echo response.successful.toString()
+	echo response.data.toString()
+						
+	slackSend (color: '#FFFF00', message: "Failed: " + message + " " + "'${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'")
+}
+
