@@ -59,7 +59,7 @@ pipeline {
 						echo response.successful.toString()
 						echo response.data.toString()
 						
-						slackSend (color: '#FFFF00', message: "Failed: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+						slackSend (color: '#ff1000', message: "Failed: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 
 					} 
 				}
@@ -101,7 +101,7 @@ pipeline {
 						echo response.successful.toString()
 						echo response.data.toString()
 						
-						slackSend (color: '#FFFF00', message: "Failed: Job - SonarQube Analysis Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+						slackSend (color: '#ff1000', message: "Failed: Job - SonarQube Analysis Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 					}
 				}
 				success {
@@ -130,7 +130,7 @@ pipeline {
 								echo response.successful.toString()
 								echo response.data.toString()
 						
-								slackSend (color: '#FFFF00', message: "Failed: Job - Sonar Quality Gate Failure '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+								slackSend (color: '#ff1000', message: "Failed: Job - Sonar Quality Gate Failure '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 								// Fail the build
 								error "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
 							}
@@ -215,7 +215,7 @@ pipeline {
 						echo response.successful.toString()
 						echo response.data.toString()
 						
-						slackSend (color: '#FFFF00', message: "Failed: Job - AWS Code Deploy Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+						slackSend (color: '#ff1000', message: "Failed: Job - AWS Code Deploy Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 					}
 				}
 				success {
@@ -251,7 +251,7 @@ pipeline {
 						echo response.successful.toString()
 						echo response.data.toString()
 						
-						slackSend (color: '#FFFF00', message: "Failed: Job - Jira Update Issues '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+						slackSend (color: '#ff1000', message: "Failed: Job - Jira Update Issues '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 					}
 				}
 				success {
@@ -284,7 +284,7 @@ pipeline {
 						echo response.successful.toString()
 						echo response.data.toString()
 						
-						slackSend (color: '#FFFF00', message: "Failed: Job - Security Dependency Check '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+						slackSend (color: '#ff1000', message: "Failed: Job - Security Dependency Check '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 					}
 				}
 				success {
@@ -315,7 +315,7 @@ pipeline {
 						echo response.successful.toString()
 						echo response.data.toString()
 						
-						slackSend (color: '#FFFF00', message: "Failed: Job - Security Dependency Publisher '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+						slackSend (color: '#ff1000', message: "Failed: Job - Security Dependency Publisher '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 					}
 				}
 				success {
@@ -464,16 +464,16 @@ pipeline {
 						echo response.successful.toString()
 						echo response.data.toString()
 						
-						slackSend (color: '#FFFF00', message: "Failed: Job - AWS Code Deploy Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+						slackSend (color: '#ff1000', message: "Failed: Job - AWS Code Deploy Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 						
 //						sendEmail("Failed");
 					}
 				}
 				success {
 					echo 'AWS Code Deploy Success'
-					slackSend (color: '#00FF00', message: "Code Deploy SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-					
-//					sendEmail("Successful");
+//					slackSend (color: '#00FF00', message: "Code Deploy SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+					semdSlack("#08ff00", "Code Deploy SUCCESSFUL")
+//					sendEmail("Successful")
 				}
 			}		
 		}
@@ -501,7 +501,6 @@ pipeline {
 			steps {
 				node('DependencyCheckNode'){ 
 					echo 'Performance Testing Report'
-					
 					perfReport modePerformancePerTestCase: true, modeThroughput: true, percentiles: '0,50,90,100', sourceDataFiles: '/var/lib/jenkins/workspace/JMeter/TTGUILog.jtl'
 					}
 			}
@@ -517,7 +516,51 @@ pipeline {
 					echo 'Performance Testing Report Check Success'
 				}
 			}
-		}				
+		}
+		stage('Run Browser testing') {
+            parallel {
+                stage('Windows IE Testing') {
+                    agent {
+                        label "DependencyCheckNode"
+                    }
+                    steps {
+                        sh "ls"
+                    }
+                    post {
+                        always {
+                            echo 'Windows IE Testing'
+                        }
+                    }
+                }
+                stage('Windows Chrome Testing') {
+                    agent {
+                        label "DependencyCheckNode"
+                    }
+                    steps {
+                        sh "ls"
+                    }
+                    post {
+                        always {
+                            echo 'Windows Chrome Testing'
+                        }
+                    }
+                }
+				stage('Windows Firefox Testing') {
+                    agent {
+                        label "DependencyCheckNode"
+                    }
+                    steps {
+                        sh "ls"
+                    }
+                    post {
+                        always {
+                            echo 'Windows Firefox Testing'
+                        }
+                    }
+                }
+            }
+        }
+		
 	}
 }
 
@@ -570,5 +613,10 @@ def sendJira(message){
 	echo response.data.toString()
 						
 	slackSend (color: '#FFFF00', message: "Failed: " + message + " - " + "'${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'")
+}
+
+def sendSlack(color, message) {
+
+	slackSend (color: color, message: message + " - Job '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'")
 }
 
