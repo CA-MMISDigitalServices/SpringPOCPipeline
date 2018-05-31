@@ -560,7 +560,7 @@ pipeline {
                 }
             }
         }
-		stage('Clean Up') {
+/*		stage('Clean Up') {
 			steps {
 				cleanWs notFailBuild: true
 			}
@@ -576,8 +576,7 @@ pipeline {
 					echo 'Clean Up Success'
 				}
 			}
-		}
-		
+		} */
 	}
 }
 
