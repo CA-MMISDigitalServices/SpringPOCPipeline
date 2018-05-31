@@ -261,12 +261,12 @@ pipeline {
 		} 
 		stage('Security Dependency Check') {
 			steps {
-				node('DependencyCheckNode'){ 
+//				node('DependencyCheckNode'){ 
 					echo 'Security Dependency Check'
 					dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
 					
-					stash (includes: "dependency-check-report.xml", name: "dependency-check-report")
-					}
+//					stash (includes: "dependency-check-report.xml", name: "dependency-check-report")
+//					}
 			}
 			post {
                 always {
@@ -296,9 +296,9 @@ pipeline {
 		}
 	stage('Security Dependency Publisher') {
 			steps {
-				echo 'Security Dependency Check'
+				echo 'Security Dependency Check'			
 				
-				unstash "dependency-check-report"
+//				unstash "dependency-check-report"
 				
 				dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
 			}
