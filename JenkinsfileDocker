@@ -260,46 +260,41 @@ pipeline {
 			}		
 		} 
 		stage('Security Dependency Check Publisher') {
-			parallel {
-				stage {
-					steps {
-//					node('DependencyCheckNode'){ 
-						echo 'Security Dependency Check'
-						dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
-						dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
-					
-//						stash (includes: "dependency-check-report.xml", name: "dependency-check-report")
-//						}
-					}
-					post {
-						always {
-							echo 'Security Dependency Check'
-						}	
-						failure {
-							script {
-								echo 'Security Dependency Check  failure'
-								testIssue = [fields: [ project: [key: "${workingJiraProject}"],
-									summary: 'Jenkins Build Failure.',
-									description: "Jenkins Build Failed - Security Dependency Check -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
-									priority: [name: 'Highest'],
-									issuetype: [name: 'Bug']]]
+			steps {
+//				node('DependencyCheckNode'){ 
+					echo 'Security Dependency Check'
+					dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
+				
+//					stash (includes: "dependency-check-report.xml", name: "dependency-check-report")
+//				}
+			}
+			post {
+				always {
+					echo 'Security Dependency Check'
+				}	
+				failure {
+					script {
+						echo 'Security Dependency Check  failure'
+						testIssue = [fields: [ project: [key: "${workingJiraProject}"],
+							summary: 'Jenkins Build Failure.',
+							description: "Jenkins Build Failed - Security Dependency Check -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+							priority: [name: 'Highest'],
+							issuetype: [name: 'Bug']]]
 
-								response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
 
-								echo response.successful.toString()
-								echo response.data.toString()
-						
-								slackSend (color: '#ff1000', message: "Failed: Job - Security Dependency Check '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-							}
-						}
-						success {
-							echo 'Security Dependency Check Success'
-						}
+						echo response.successful.toString()
+						echo response.data.toString()
+				
+						slackSend (color: '#ff1000', message: "Failed: Job - Security Dependency Check '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 					}
 				}
-			
-			
-/*		stage('Security Dependency Publisher') {
+				success {
+					echo 'Security Dependency Check Success'
+				}
+			}
+		}	
+		stage('Security Dependency Publisher') {
 			steps {
 				echo 'Security Dependency Check'			
 				
@@ -332,52 +327,49 @@ pipeline {
 					echo 'Security Dependency Publisher Success'
 				}
 			}
-		} */
-				stage('Docker Build Image') {
-					steps {
-						script {
-							echo 'Docker Build'
-							sh "pwd" 
-							
-							// Remove all docker images from local repos.
-							def COUNT = sh returnStdout: true, script: "docker images | grep ${workingImageName} | wc -l"
+		} 
+		stage('Docker Build Image') {
+			steps {
+				script {
+					echo 'Docker Build'
+					sh "pwd" 
+					
+					// Remove all docker images from local repos.
+					def COUNT = sh returnStdout: true, script: "docker images | grep ${workingImageName} | wc -l"
 
-							echo "Image count : ${COUNT}" 
-							
-							def intValue = COUNT.toInteger()
-							if ((intValue > 0)) {
-								echo 'Images exist -- Removing Images'
-								sh 'docker rmi $(docker images -q)'
-							}
-						
-							// Setup version tag.
-							def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
-							def version = pom.version.replace("-SNAPSHOT", ".${currentBuild.number}")
-							echo "version : ${version}"
-							
-							def (major, minor, increment, buildnum) = version.tokenize('.')
-							echo  "After tokenize major ${major}"
+					echo "Image count : ${COUNT}" 
+					
+					def intValue = COUNT.toInteger()
+					if ((intValue > 0)) {
+						echo 'Images exist -- Removing Images'
+						sh 'docker rmi $(docker images -q)'
+					}
+				
+					// Setup version tag.
+					def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
+					def version = pom.version.replace("-SNAPSHOT", ".${currentBuild.number}")
+					echo "version : ${version}"
+					
+					def (major, minor, increment, buildnum) = version.tokenize('.')
+					echo  "After tokenize major ${major}"
 
-							def tagVersion = major + '.' + minor + '.' + increment + '.SNAPSHOT'
-								echo "tagVersion :  ${tagVersion}"
-						
-								sh "docker build -f SpringPOC/Dockerfile  -t trinitytg/springpoc:${tagVersion} /var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC"
-						}
-					}
-					post {
-						always {
-							echo 'Docker Build'
-						}
-						failure {	
-							echo 'Failure Docker Build'				
-						}
-						success {
-							echo 'Success Docker Build'
-						}
-					}
-			
+					def tagVersion = major + '.' + minor + '.' + increment + '.SNAPSHOT'
+						echo "tagVersion :  ${tagVersion}"
+				
+						sh "docker build -f SpringPOC/Dockerfile  -t trinitytg/springpoc:${tagVersion} /var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC"
 				}
-			}	
+			}
+			post {
+				always {
+					echo 'Docker Build'
+				}
+				failure {	
+					echo 'Failure Docker Build'				
+				}
+				success {
+					echo 'Success Docker Build'
+				}
+			}
 		}
 		stage('Docker Push') {
 			steps {
