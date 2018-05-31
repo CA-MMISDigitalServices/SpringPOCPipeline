@@ -259,46 +259,49 @@ pipeline {
 				}
 			}		
 		} 
-		stage('Security Dependency Check') {
-			steps {
+		stage('Security Dependency Check / Publisher') {
+			parallel {
+				steps {
 //				node('DependencyCheckNode'){ 
 					echo 'Security Dependency Check'
 					dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
+					dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
 					
 //					stash (includes: "dependency-check-report.xml", name: "dependency-check-report")
 //					}
-			}
-			post {
-                always {
-					echo 'Security Dependency Check'
-                }	
-				failure {
-					script {
-						echo 'Security Dependency Check  failure'
-						testIssue = [fields: [ project: [key: "${workingJiraProject}"],
+				}
+				post {
+					always {
+						echo 'Security Dependency Check'
+					}	
+					failure {
+						script {
+							echo 'Security Dependency Check  failure'
+							testIssue = [fields: [ project: [key: "${workingJiraProject}"],
 									summary: 'Jenkins Build Failure.',
 									description: "Jenkins Build Failed - Security Dependency Check -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
 									priority: [name: 'Highest'],
 									issuetype: [name: 'Bug']]]
 
-						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+							response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
 
-						echo response.successful.toString()
-						echo response.data.toString()
+							echo response.successful.toString()
+							echo response.data.toString()
 						
-						slackSend (color: '#ff1000', message: "Failed: Job - Security Dependency Check '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+							slackSend (color: '#ff1000', message: "Failed: Job - Security Dependency Check '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+						}
 					}
-				}
-				success {
-					echo 'Security Dependency Check Success'
+					success {
+						echo 'Security Dependency Check Success'
+					}
 				}
 			}
 		}
-	stage('Security Dependency Publisher') {
+/*	stage('Security Dependency Publisher') {
 			steps {
 				echo 'Security Dependency Check'			
 				
-//				unstash "dependency-check-report"
+				unstash "dependency-check-report"
 				
 				dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
 			}
@@ -327,7 +330,7 @@ pipeline {
 					echo 'Security Dependency Publisher Success'
 				}
 			}
-		} 
+		} */
 		stage('Docker Build Image') {
 			steps {
 				script {
