@@ -560,6 +560,23 @@ pipeline {
                 }
             }
         }
+		stage('Clean Up') {
+			steps {
+				cleanWs notFailBuild: true
+			}
+			post {
+                always {
+					echo 'Clean Up'
+                }	
+				failure {
+					echo 'Clean Up'
+					sendJira("Clean Up Failure")
+				}
+				success {
+					echo 'Clean Up Success'
+				}
+			}
+		}
 		
 	}
 }
