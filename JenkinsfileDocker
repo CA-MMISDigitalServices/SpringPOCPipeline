@@ -394,9 +394,9 @@ pipeline {
 						echo "working dir is : $_cdir"
 					
 						// Replace contents for startup script.
-						sh "sed -i -e 's/dummyUser/${env.dockerhubUser}/g' '$_cdir/startup.sh'"
-						sh "sed -i -e 's/dummyPass/${env.dockerhubPassword}/g' '_cdir/startup.sh'"
-						sh "sed -i -e 's/dummyTag/${tagVersion}/g' '$_cdir/startup.sh'"
+						sh "sed -i -e 's/dummyUser/${env.dockerhubUser}/g' '$_cdir/startup'"
+						sh "sed -i -e 's/dummyPass/${env.dockerhubPassword}/g' '_cdir/startup'"
+						sh "sed -i -e 's/dummyTag/${tagVersion}/g' '$_cdir/startup'"
 
 //						sh "docker commit -m 'Updated springpoc' -a 'Jenkins Build' springpoc trinitytg/springpoc:${tagVersion}"
 						
