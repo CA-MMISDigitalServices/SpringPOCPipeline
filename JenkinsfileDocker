@@ -298,7 +298,7 @@ pipeline {
 			steps {
 				echo 'Security Dependency Check'			
 				
-				unstash "dependency-check-report"
+//				unstash "dependency-check-report"
 				
 				dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
 			}
@@ -356,7 +356,7 @@ pipeline {
 					def tagVersion = major + '.' + minor + '.' + increment + '.SNAPSHOT'
 						echo "tagVersion :  ${tagVersion}"
 				
-						sh "docker build -f SpringPOC/Dockerfile  -t trinitytg/springpoc:${tagVersion} /var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC"
+					sh "docker build -f SpringPOC/Dockerfile  -t trinitytg/springpoc:${tagVersion} /var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC"
 				}
 			}
 			post {
