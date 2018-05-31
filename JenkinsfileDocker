@@ -259,7 +259,7 @@ pipeline {
 				}
 			}		
 		} 
-		stage('Security Dependency Check / Publisher') {
+		stage('Security Dependency Check Publisher') {
 			parallel {
 				stage {
 					steps {
@@ -298,7 +298,7 @@ pipeline {
 					}
 				}
 			
-		}
+			
 /*		stage('Security Dependency Publisher') {
 			steps {
 				echo 'Security Dependency Check'			
@@ -333,50 +333,51 @@ pipeline {
 				}
 			}
 		} */
-		stage('Docker Build Image') {
-			steps {
-				script {
-					echo 'Docker Build'
-					sh "pwd" 
-					
-					// Remove all docker images from local repos.
-					def COUNT = sh returnStdout: true, script: "docker images | grep ${workingImageName} | wc -l"
+				stage('Docker Build Image') {
+					steps {
+						script {
+							echo 'Docker Build'
+							sh "pwd" 
+							
+							// Remove all docker images from local repos.
+							def COUNT = sh returnStdout: true, script: "docker images | grep ${workingImageName} | wc -l"
 
-					echo "Image count : ${COUNT}" 
-				    
-					def intValue = COUNT.toInteger()
-					if ((intValue > 0)) {
-						echo 'Images exist -- Removing Images'
-					    sh 'docker rmi $(docker images -q)'
+							echo "Image count : ${COUNT}" 
+							
+							def intValue = COUNT.toInteger()
+							if ((intValue > 0)) {
+								echo 'Images exist -- Removing Images'
+								sh 'docker rmi $(docker images -q)'
+							}
+						
+							// Setup version tag.
+							def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
+							def version = pom.version.replace("-SNAPSHOT", ".${currentBuild.number}")
+							echo "version : ${version}"
+							
+							def (major, minor, increment, buildnum) = version.tokenize('.')
+							echo  "After tokenize major ${major}"
+
+							def tagVersion = major + '.' + minor + '.' + increment + '.SNAPSHOT'
+								echo "tagVersion :  ${tagVersion}"
+						
+								sh "docker build -f SpringPOC/Dockerfile  -t trinitytg/springpoc:${tagVersion} /var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC"
+						}
 					}
-				
-					// Setup version tag.
-					def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
-					def version = pom.version.replace("-SNAPSHOT", ".${currentBuild.number}")
-					echo "version : ${version}"
-					
-					def (major, minor, increment, buildnum) = version.tokenize('.')
-					echo  "After tokenize major ${major}"
-
-					def tagVersion = major + '.' + minor + '.' + increment + '.SNAPSHOT'
-					echo "tagVersion :  ${tagVersion}"
-				
-					sh "docker build -f SpringPOC/Dockerfile  -t trinitytg/springpoc:${tagVersion} /var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC"
+					post {
+						always {
+							echo 'Docker Build'
+						}
+						failure {	
+							echo 'Failure Docker Build'				
+						}
+						success {
+							echo 'Success Docker Build'
+						}
+					}
+			
 				}
-			}
-			post {
-                always {
-					echo 'Docker Build'
-                }
-				failure {	
-					echo 'Failure Docker Build'				
-				}
-				success {
-					echo 'Success Docker Build'
-				}
-			}
-			}
-				
+			}	
 		}
 		stage('Docker Push') {
 			steps {
