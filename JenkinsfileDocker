@@ -395,7 +395,7 @@ pipeline {
 					
 						// Replace contents for start_server script.
 						sh "sed -i -e 's/dummyUser/${env.dockerhubUser}/g' '$_cdir/start_server'"
-						sh "sed -i -e 's/dummyPass/${env.dockerhubPassword}/g' '_cdir/start_server'"
+						sh "sed -i -e 's/dummyPass/${env.dockerhubPassword}/g' '$_cdir/start_server'"
 						sh "sed -i -e 's/dummyTag/${tagVersion}/g' '$_cdir/start_server'"
 
 //						sh "docker commit -m 'Updated springpoc' -a 'Jenkins Build' springpoc trinitytg/springpoc:${tagVersion}"
