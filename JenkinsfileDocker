@@ -25,7 +25,7 @@ pipeline {
 		AWSCDSubDirectory= 'SpringPOC'
 		
 		// Sonar 
-		workSonarUrl= 'http://158.96.16.211:9000/'
+		workingSonarUrl= 'http://158.96.16.211:9000/'
 		
 		// Jira project setup
 		workingJiraProject ='PTP'
