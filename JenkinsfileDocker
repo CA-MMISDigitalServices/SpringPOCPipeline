@@ -1,3 +1,7 @@
+/*	Jenkins pipeline for Docker build and push to docker Hub.   
+	
+*/
+
 pipeline {
   agent any
 	environment { 
@@ -20,6 +24,9 @@ pipeline {
 		AWSCDDeploymentGroupName= 'SpringPOCDockerDG'
 		AWSCDSubDirectory= 'SpringPOC'
 		
+		// Sonar 
+		workSonarUrl= 'http://158.96.16.211:9000/'
+		
 		// Jira project setup
 		workingJiraProject ='PTP'
 		
@@ -38,6 +45,7 @@ pipeline {
 		stage('Build') {
             steps {
 				script {
+					sendSlack("#00FF00", "Build Started")
 					sh "'${mvnHome}/bin/mvn' -X -B --file '${workingPOM}' -Dmaven.test.failure.ignore clean install cobertura:cobertura -Dcobertura.report.format=xml"
 				}
             }
@@ -48,24 +56,13 @@ pipeline {
 				failure {
 					echo 'Build Stage failure'
 					script {
-						testIssue = [fields: [ project: [key: "${workingJiraProject}"],
-									summary: 'Jenkins Build Failure.',
-									description: "Jenkins Build Failure -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
-									priority: [name: 'Highest'],
-									issuetype: [name: 'Bug']]]
-
-						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
-
-						echo response.successful.toString()
-						echo response.data.toString()
-						
-						slackSend (color: '#ff1000', message: "Failed: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-
+						sendJira("Maven Build Failed")
 					} 
 				}
 				success {
 					echo 'Build Stage Success'
-					slackSend (color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+//					slackSend (color: '#00FF00', message: "Maven Build SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+					sendSlack("#00FF00", "Maven Build SUCCESSFUL")
 				}	
 			} 
         } 
@@ -73,7 +70,8 @@ pipeline {
     		steps { 
 				withSonarQubeEnv('SonarQubeServer') {
 					sh '/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/Sonar/bin/sonar-scanner' +
-					' -Dsonar.host.url=http://158.96.16.211:9000/' + 
+//					' -Dsonar.host.url=http://158.96.16.211:9000/' + 
+					' -Dsonar.host.url="${workingSonarUrl}" +
 					' -Dsonar.projectVersion=1.0' +
 					' -Dsonar.sourceEncoding=UTF-8' +
 					' -Dsonar.projectKey="${workingJob}"' +
@@ -89,19 +87,7 @@ pipeline {
 				failure {
 					echo 'SonarQube Analysis  failure'
 					script {
-						echo 'AWS Code Deploy  failure'
-						testIssue = [fields: [ project: [key: "${workingJiraProject}"],
-									summary: 'Jenkins Build Failure.',
-									description: "Jenkins Build Failed - SonarQube Analysis Failed -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
-									priority: [name: 'Highest'],
-									issuetype: [name: 'Bug']]]
-
-						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
-
-						echo response.successful.toString()
-						echo response.data.toString()
-						
-						slackSend (color: '#ff1000', message: "Failed: Job - SonarQube Analysis Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+						sendJira("Sonar Analysis Failed")
 					}
 				}
 				success {
@@ -111,7 +97,7 @@ pipeline {
 		} 
     	stage('SonarQube Quality Gate') { 
 			steps {
-				node('master'){ 
+//				node('master'){ 
 					script {
 						timeout(time: 1, unit: 'HOURS') { 
 							echo '************ Inside Quality Gate'
@@ -119,24 +105,14 @@ pipeline {
 							echo qualityGate.status.toString() 
 							if (qualityGate.status != 'OK') {
 							
-								testIssue = [fields: [ project: [key: "${workingJiraProject}"],
-									summary: 'Jenkins Build Failure.',
-									description: "Jenkins Build Sonar Quality Gate Failure -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
-									priority: [name: 'Highest'],
-									issuetype: [name: 'Bug']]]
-
-								response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
-
-								echo response.successful.toString()
-								echo response.data.toString()
-						
-								slackSend (color: '#ff1000', message: "Failed: Job - Sonar Quality Gate Failure '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+								sendJira("Pipeline aborted due to quality gate failure: ${qualityGate.status}")
+							
 								// Fail the build
 								error "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
 							}
 						}
 					}
-		}
+//				}
 			}
 			post {
                 always {
@@ -144,6 +120,7 @@ pipeline {
                 }
 				failure {
 					echo 'SonarQube Quality Gate  failure'
+					sendJira("Sonar Quality Failed")
 				}
 				success {
 					echo 'SonarQube Quality Gate Success'
@@ -166,6 +143,7 @@ pipeline {
 				}
 				failure {
 					echo 'failure'
+					sendJira("JUnit Test Failed")
 				}
 				success {
 					echo 'success'
@@ -186,43 +164,13 @@ pipeline {
                 }
 				failure {
 					echo 'Code Coverage Report failure'
+					sendJira("Code Coverage Failed")
 				}
 				success {
 					echo 'Code Coverage Report Success'
 				}	
 			}
 		}  
-/*		stage('Maven Nexus Deploy') {
-			steps {
-				sh "'${mvnHome}/bin/mvn' -X -B --file '${workingPOM}' -Dintegration-tests.skip=true deploy"
-            }
-			post {
-                always {
-                   echo 'Maven Nexus Deploy  Done'
-                }
-				failure {
-					echo 'Maven Nexus Deploy  failure'
-					script {
-						echo 'AWS Code Deploy  failure'
-						testIssue = [fields: [ project: [key: "${workingJiraProject}"],
-									summary: 'Jenkins Build Failure.',
-									description: "Jenkins Build Failed - Nexus Depolyment Failed -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
-									priority: [name: 'Highest'],
-									issuetype: [name: 'Bug']]]
-
-						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
-
-						echo response.successful.toString()
-						echo response.data.toString()
-						
-						slackSend (color: '#ff1000', message: "Failed: Job - AWS Code Deploy Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-					}
-				}
-				success {
-					echo 'Maven Nexus Deploy Success'
-				}	
-			}
-		}  */
 		stage('Jira Update Issues') {
 			steps {
 				echo 'Jira Update Issues'
@@ -239,19 +187,8 @@ pipeline {
 				failure {
 					echo 'Jira Update Issues  failure'
 					script {
-						echo 'AWS Code Deploy  failure'
-						testIssue = [fields: [ project: [key: "${workingJiraProject}"],
-									summary: 'Jenkins Build Failure.',
-									description: "Jenkins Build Failed - Jira Update Issues Failed-  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
-									priority: [name: 'Highest'],
-									issuetype: [name: 'Bug']]]
-
-						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
-
-						echo response.successful.toString()
-						echo response.data.toString()
-						
-						slackSend (color: '#ff1000', message: "Failed: Job - Jira Update Issues '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+						echo 'JIRA update Issues failure'
+						sendJira("Maven Nexus Deploy Failed")
 					}
 				}
 				success {
@@ -265,6 +202,7 @@ pipeline {
 					echo 'Security Dependency Check'
 					dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
 				
+					// Stash used to push content for Slave of later processing.
 //					stash (includes: "dependency-check-report.xml", name: "dependency-check-report")
 //				}
 			}
@@ -275,18 +213,7 @@ pipeline {
 				failure {
 					script {
 						echo 'Security Dependency Check  failure'
-						testIssue = [fields: [ project: [key: "${workingJiraProject}"],
-							summary: 'Jenkins Build Failure.',
-							description: "Jenkins Build Failed - Security Dependency Check -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
-							priority: [name: 'Highest'],
-							issuetype: [name: 'Bug']]]
-
-						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
-
-						echo response.successful.toString()
-						echo response.data.toString()
-				
-						slackSend (color: '#ff1000', message: "Failed: Job - Security Dependency Check '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+						sendJira("Security Dependency Check Failed")
 					}
 				}
 				success {
@@ -309,18 +236,7 @@ pipeline {
 				failure {
 					script {
 						echo 'Security Dependency Publisher  failure'
-						testIssue = [fields: [ project: [key: "${workingJiraProject}"],
-									summary: 'Jenkins Build Failure.',
-									description: "Jenkins Build Failed - Security Dependency Check -  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
-									priority: [name: 'Highest'],
-									issuetype: [name: 'Bug']]]
-
-						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
-
-						echo response.successful.toString()
-						echo response.data.toString()
-						
-						slackSend (color: '#ff1000', message: "Failed: Job - Security Dependency Publisher '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+						sendJira("Security Dependency Publisher Failed")
 					}
 				}
 				success {
@@ -354,8 +270,9 @@ pipeline {
 					echo  "After tokenize major ${major}"
 
 					def tagVersion = major + '.' + minor + '.' + increment + '.SNAPSHOT'
-						echo "tagVersion :  ${tagVersion}"
+					echo "tagVersion :  ${tagVersion}"
 				
+					// Build Docker Image
 					sh "docker build -f SpringPOC/Dockerfile  -t trinitytg/springpoc:${tagVersion} /var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC"
 				}
 			}
@@ -364,7 +281,8 @@ pipeline {
 					echo 'Docker Build'
 				}
 				failure {	
-					echo 'Failure Docker Build'				
+					echo 'Failure Docker Build'	
+					sendJira("Docker Build Failed")					
 				}
 				success {
 					echo 'Success Docker Build'
@@ -397,15 +315,12 @@ pipeline {
 						sh "sed -i -e 's/dummyUser/${env.dockerhubUser}/g' '$_cdir/start_server'"
 						sh "sed -i -e 's/dummyPass/${env.dockerhubPassword}/g' '$_cdir/start_server'"
 						sh "sed -i -e 's/dummyTag/${tagVersion}/g' '$_cdir/start_server'"
-
-//						sh "docker commit -m 'Updated springpoc' -a 'Jenkins Build' springpoc trinitytg/springpoc:${tagVersion}"
-						
-//						sh "docker tag springpoc trinitytg/springpoc:${tagVersion}"
 					
+						// login into Docker Hub
 						sh "docker login -u ${env.dockerhubUser} -p ${env.dockerhubPassword}"
 						
+						// Push image to Docker Hub
 						sh "docker push trinitytg/springpoc:${tagVersion}"
-//						sh "docker push trinitytg/springpoc"
 					}
 				}
 			}
@@ -414,7 +329,8 @@ pipeline {
 					echo 'Docker Push'
                 }
 				failure {	
-					echo 'Failure Docker Push'				
+					echo 'Failure Docker Push'	
+					sendJira("Docker Push Failed")
 				}
 				success {
 					echo 'Success Docker Push'
@@ -427,6 +343,7 @@ pipeline {
 				echo "env.AWS_ACCESS_KEY_ID :" + env.AWS_ACCESS_KEY_ID
 				echo "env.AWS_SECRET_ACCESS_KEY :" + env.AWS_SECRET_ACCESS_KEY
 				
+				// Run WAS CodeDeploy
 				step([$class: 'AWSCodeDeployPublisher', 
 						applicationName: "${AWSCDapplicationName}",
 						awsAccessKey: env.AWS_ACCESS_KEY_ID,
@@ -458,26 +375,16 @@ pipeline {
 				failure {
 					script {
 						echo 'AWS Code Deploy  failure'
-						testIssue = [fields: [ project: [key: "${workingJiraProject}"],
-									summary: 'Jenkins Build Failure.',
-									description: "Jenkins Build Failed - AWS Code Deploy Failed-  Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
-									priority: [name: 'Highest'],
-									issuetype: [name: 'Bug']]]
-
-						response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
-
-						echo response.successful.toString()
-						echo response.data.toString()
-						
-						slackSend (color: '#ff1000', message: "Failed: Job - AWS Code Deploy Failed '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-						
+						sendJira("AWS Code Deploy Failed")
+						// Send Email
 //						sendEmail("Failed");
 					}
+
 				}
 				success {
 					echo 'AWS Code Deploy Success'
-//					slackSend (color: '#00FF00', message: "Code Deploy SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-					semdSlack("#08ff00", "Code Deploy SUCCESSFUL")
+					sendSlack("#08ff00", "Code Deploy SUCCESSFUL")
+					// Send Email
 //					sendEmail("Successful")
 				}
 			}		
@@ -565,7 +472,7 @@ pipeline {
                 }
             }
         }
-		stage('Clean Up') {
+/*		stage('Clean Up') {
 			steps {
 				cleanWs notFailBuild: true
 			}
@@ -576,16 +483,41 @@ pipeline {
 				failure {
 					echo 'Clean Up'
 					sendJira("Clean Up Failure")
+					sendSlack("#08ff00", "Build Failed")
 				}
 				success {
 					echo 'Clean Up Success'
+					sendSlack("#00FF00", "Build SUCCESSFUL")
 				}
 			}
-		} 
+		}  */
 	}
+	post {
+        // Always runs. And it runs before any of the other post conditions.
+        always {
+			echo 'Let's wipe out the workspace before we finish!'
+            // Let's wipe out the workspace before we finish!
+            cleanWs notFailBuild: true
+        }
+        success {
+			//          sendEmail("Failed");
+//          sendEmail("Successful");
+        }
+        unstable {
+            echo 'Build is unstable'
+//			sendEmail("Successful");
+        }
+        failure {
+			echo 'Build is failure'
+//          sendEmail("Failed");
+			sendJira("Build Failure Failure")
+			sendSlack("#08ff00", "Build Failed")
+        }
+    }
 }
+// Function defined.
 
-
+// Get status for Email.
 def getChangeString() {
     MAX_MSG_LEN = 100
     def changeString = ""
@@ -607,6 +539,7 @@ def getChangeString() {
     return changeString
 }
 
+//Send Email 
 def sendEmail(status) {
  		
 	emailext (
@@ -619,6 +552,7 @@ def sendEmail(status) {
 			
 }
 
+// Open issues with JIRA.
 def sendJira(message){
 
 	echo 'Send Jira Message'
@@ -632,10 +566,13 @@ def sendJira(message){
 
 	echo response.successful.toString()
 	echo response.data.toString()
+	
+	sendSlack("#FFFF00'", message)
 						
-	slackSend (color: '#FFFF00', message: "Failed: " + message + " - " + "'${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'")
+//	slackSend (color: '#FFFF00', message: "Failed: " + message + " - " + "'${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'")
 }
 
+// Send a message to Slack
 def sendSlack(color, message) {
 
 	slackSend (color: color, message: message + " - Job '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'")
