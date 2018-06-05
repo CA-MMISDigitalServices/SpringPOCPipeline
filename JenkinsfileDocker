@@ -472,7 +472,7 @@ pipeline {
                 }
             }
         }
-/*		stage('Clean Up') {
+		stage('Clean Up') {
 			steps {
 				cleanWs notFailBuild: true
 			}
@@ -490,17 +490,16 @@ pipeline {
 					sendSlack("#00FF00", "Build SUCCESSFUL")
 				}
 			}
-		}  */
+		}  
 	}
 	post {
         // Always runs. And it runs before any of the other post conditions.
         always {
 			echo 'Lets wipe out the workspace before we finish!'
             // Let's wipe out the workspace before we finish!
-            cleanWs notFailBuild: true
         }
         success {
-			//          sendEmail("Failed");
+//          sendEmail("Failed");
 //          sendEmail("Successful");
         }
         unstable {
