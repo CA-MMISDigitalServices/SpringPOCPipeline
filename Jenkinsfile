@@ -116,7 +116,7 @@ pipeline {
 		} 
     	stage('SonarQube Quality Gate') { 
 			steps {
-				node('master'){ 
+//				node('master'){ 
 					script {
 						timeout(time: 1, unit: 'HOURS') { 
 							echo '************ Inside Quality Gate'
@@ -141,7 +141,7 @@ pipeline {
 							}
 						}
 					}
-				}
+//				}
 			}
 			post {
                 always {
