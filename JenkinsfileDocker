@@ -492,27 +492,6 @@ pipeline {
 			}
 		}  
 	}
-	post {
-        // Always runs. And it runs before any of the other post conditions.
-        always {
-			echo 'Lets wipe out the workspace before we finish!'
-            // Let's wipe out the workspace before we finish!
-        }
-        success {
-//          sendEmail("Failed");
-//          sendEmail("Successful");
-        }
-        unstable {
-            echo 'Build is unstable'
-//			sendEmail("Successful");
-        }
-        failure {
-			echo 'Build is failure'
-//          sendEmail("Failed");
-			sendJira("Build Failure Failure")
-			sendSlack("#08ff00", "Build Failed")
-        }
-    }
 }
 // Function defined.
 
