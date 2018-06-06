@@ -478,12 +478,11 @@ pipeline {
 			}
 			post {
                 always {
-					echo 'Clean Up'
+					echo 'Clean Up always'
                 }	
 				failure {
-					echo 'Clean Up'
+					echo 'Clean Up failure'
 					sendJira("Clean Up Failure")
-					sendSlack("#08ff00", "Build Failed")
 				}
 				success {
 					echo 'Clean Up Success'
@@ -492,7 +491,21 @@ pipeline {
 			}
 		}  
 	}
+	post {
+        always {
+			echo 'Clean Up always'
+        }	
+		failure {
+			echo 'Clean Up failure'
+			sendJira("Clean Up Failure")
+		}
+		success {
+			echo 'Clean Up Success'
+			sendSlack("#00FF00", "Build SUCCESSFUL")
+		}
+	}
 }
+
 // Function defined.
 
 // Get status for Email.
