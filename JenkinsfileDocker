@@ -498,6 +498,9 @@ pipeline {
 	post {
         always {
 			echo 'Clean Up always'
+			sh "aws s3 cp s3://environmentscripts/dockerbuildscripts/getDockerTags getDockerTags --region us-gov-west-1"
+			sh "chmod 755 getDockerTags"
+			sh "getDockerTags"
         }	
 		failure {
 			echo 'Clean Up failure'
@@ -505,9 +508,6 @@ pipeline {
 		}
 		success {
 			echo 'Clean Up Success'
-			sh "aws s3 cp s3://environmentscripts/dockerbuildscripts/getDockerTags getDockerTags --region us-gov-west-1"
-			sh "chmod 755 getDockerTags"
-			sh "getDockerTags"
 			sendSlack("#00FF00", "Build SUCCESSFUL")
 		}
 	}
