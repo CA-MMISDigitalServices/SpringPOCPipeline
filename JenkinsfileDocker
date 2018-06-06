@@ -498,9 +498,10 @@ pipeline {
 	post {
         always {
 			echo 'Clean Up always'
+			sh "rm -f dockerTags.prop"
 			sh "aws s3 cp s3://environmentscripts/dockerbuildscripts/getDockerTags getDockerTags --region us-gov-west-1"
 			sh "chmod 755 getDockerTags"
-			sh "getDockerTags"
+			sh "./getDockerTags"
         }	
 		failure {
 			echo 'Clean Up failure'
