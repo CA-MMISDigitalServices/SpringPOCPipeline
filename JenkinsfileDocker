@@ -35,6 +35,9 @@ pipeline {
 		
 		// email 
 		workingEmailRecipients = 'randy.duart@dhcs.ca.gov'
+		
+		// 
+		workingMesage = 'test message'
     }
 	stages {
 		stage('Preparation') {
@@ -57,6 +60,7 @@ pipeline {
 					echo 'Build Stage failure'
 					script {
 						sendJira("Maven Build Failed")
+						
 					} 
 				}
 				success {
@@ -501,6 +505,9 @@ pipeline {
 		}
 		success {
 			echo 'Clean Up Success'
+			sh "aws s3 cp s3://environmentscripts/dockerbuildscripts/getDockerTags getDockerTags --region us-gov-west-1"
+			sh "chmod 755 getDockerTags"
+			sh "getDockerTags"
 			sendSlack("#00FF00", "Build SUCCESSFUL")
 		}
 	}
