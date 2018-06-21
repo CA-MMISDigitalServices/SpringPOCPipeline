@@ -1,3 +1,11 @@
+/* This Jenkins file uses the Maven release plug.   
+	- The War file is stored in Nexus.
+	- The War file is deployed with AWS codedeploy
+	- The maven release plug in created the release tag and update the POMS accordingly.
+	
+	-- Environment parameters need to be adjusted for this script ot work.
+*/
+
 pipeline {
     // run on jenkins nodes that has no label
     agent any
@@ -36,8 +44,6 @@ pipeline {
 			steps {
 				echo 'ReleaseVersion ' + env.releaseVersion
 				
-//				git url: 'https://github.com/rduart/XMLtoPDF.git', branch: 'master'
-				
 				git url: "${workingGitURL}", branch: "${workingBranch}"
 				
 				//This git is for SSH the JenkinsPipelineID is the name for Git
@@ -66,9 +72,7 @@ pipeline {
                     sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dintegration-tests.skip=true -Dbuild.number=${targetVersion} clean install cobertura:cobertura -Dcobertura.report.format=xml"
 				
                     def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
-                    // get the current development version 
-//                   developmentArtifactVersion = "${pom.version}-${targetVersion}"
-//					echo 'developmentArtifactVersion:   ' + developmentArtifactVersion
+
                     print pom.version
                 }
             }
@@ -244,6 +248,7 @@ pipeline {
 				}	
 			}
 		} 
+		// Not being used.    Letting maven release plug update Nexus   -- Might need later
 /*		stage('Nexus Release Upload') {   
 			when {
                 // check if branch is master
@@ -447,7 +452,6 @@ pipeline {
 
 					sh "git clean -f && git reset --hard origin/'${workingBranch}'"
 				
-//					def targetVersion = getReleaseVersion()
 					def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
 					def version = pom.version.replace("-SNAPSHOT", ".${currentBuild.number}")
 					echo "version : ${version}"
@@ -467,11 +471,8 @@ pipeline {
 					devVersion += 1 
 					
 					def developmentVersion = major + '.' + minor + '.' + increment
-					//Convert int to def
-//					def developmentVersion = devVersion
 					echo "developmentVersion : ${developmentVersion}"
 									
-//					sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dtag=${tagVersion} -DreleaseVersion=${version} -DdevelopmentVersion=${developmentVersion} release:prepare release:perform -B"
 					sh "'${mvnHome}/bin/mvn' -e --file '${workingPOM}' -Dtag=${tagVersion} -DreleaseVersion=${releaseVersion} -DdevelopmentVersion=${developmentVersion} release:prepare release:perform -B"
 				}
 			}

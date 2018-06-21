@@ -1,5 +1,9 @@
-/*	Jenkins pipeline for Docker build and push to docker Hub.   
+/*	Jenkins pipeline for Docker build and push to docker Hub. 
+	- Maven is used for the build
+	- Docker image is built and push to Docker hub.
+	- AWS codedeploy is used to depoly the Docker container
 	
+	-- Environment parameters need to be adjusted for this script to work for a different build.
 */
 
 pipeline {
@@ -65,7 +69,6 @@ pipeline {
 				}
 				success {
 					echo 'Build Stage Success'
-//					slackSend (color: '#00FF00', message: "Maven Build SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
 					sendSlack("#00FF00", "Maven Build SUCCESSFUL")
 				}	
 			} 
@@ -74,7 +77,6 @@ pipeline {
     		steps { 
 				withSonarQubeEnv('SonarQubeServer') {
 					sh '/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/Sonar/bin/sonar-scanner' +
-//					' -Dsonar.host.url=http://158.96.16.211:9000/' + 
 					' -Dsonar.host.url="${workingSonarUrl}"' +
 					' -Dsonar.projectVersion=1.0' +
 					' -Dsonar.sourceEncoding=UTF-8' +
@@ -101,22 +103,20 @@ pipeline {
 		} 
     	stage('SonarQube Quality Gate') { 
 			steps {
-//				node('master'){ 
-					script {
-						timeout(time: 1, unit: 'HOURS') { 
-							echo '************ Inside Quality Gate'
-							qualityGate = waitForQualityGate() 
-							echo qualityGate.status.toString() 
-							if (qualityGate.status != 'OK') {
+				script {
+					timeout(time: 1, unit: 'HOURS') { 
+						echo '************ Inside Quality Gate'
+						qualityGate = waitForQualityGate() 
+						echo qualityGate.status.toString() 
+						if (qualityGate.status != 'OK') {
 							
-								sendJira("Pipeline aborted due to quality gate failure: ${qualityGate.status}")
+							sendJira("Pipeline aborted due to quality gate failure: ${qualityGate.status}")
 							
-								// Fail the build
-								error "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
-							}
+							// Fail the build
+							error "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
 						}
 					}
-//				}
+				}
 			}
 			post {
                 always {
@@ -202,13 +202,9 @@ pipeline {
 		} 
 		stage('Security Dependency Check Publisher') {
 			steps {
-//				node('DependencyCheckNode'){ 
-					echo 'Security Dependency Check'
-					dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
-				
-					// Stash used to push content for Slave of later processing.
-//					stash (includes: "dependency-check-report.xml", name: "dependency-check-report")
-//				}
+
+				echo 'Security Dependency Check'
+				dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
 			}
 			post {
 				always {
@@ -262,7 +258,7 @@ pipeline {
 					def intValue = COUNT.toInteger()
 					if ((intValue > 0)) {
 						echo 'Images exist -- Removing Images'
-						sh 'docker rmi $(docker images -q)'
+						sh 'docker rmi -f $(docker images -q)'
 					}
 				
 					// Setup version tag.
@@ -297,10 +293,7 @@ pipeline {
 			steps {
 				withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'dockerhubPassword', usernameVariable: 'dockerhubUser')]) {
 					script {
-					
-						echo "hubuser : ${env.dockerhubUser}" 
-						echo "hubpass : ${env.dockerhubPassword}" 
-					
+										
 						// Setup version tag.
 						def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
 						def version = pom.version.replace("-SNAPSHOT", ".${currentBuild.number}")
@@ -319,6 +312,7 @@ pipeline {
 						sh "sed -i -e 's/dummyUser/${env.dockerhubUser}/g' '$_cdir/start_server'"
 						sh "sed -i -e 's/dummyPass/${env.dockerhubPassword}/g' '$_cdir/start_server'"
 						sh "sed -i -e 's/dummyTag/${tagVersion}/g' '$_cdir/start_server'"
+						sh "sed -i -e 's/dummyTag2/${tagVersion}/g' '$_cdir/start_server'"
 					
 						// login into Docker Hub
 						sh "docker login -u ${env.dockerhubUser} -p ${env.dockerhubPassword}"
@@ -344,8 +338,6 @@ pipeline {
 		stage('AWS Code Deploy') {
 			steps {
 				echo 'AWS Code Deploy'
-				echo "env.AWS_ACCESS_KEY_ID :" + env.AWS_ACCESS_KEY_ID
-				echo "env.AWS_SECRET_ACCESS_KEY :" + env.AWS_SECRET_ACCESS_KEY
 				
 				// Run WAS CodeDeploy
 				step([$class: 'AWSCodeDeployPublisher', 
@@ -567,8 +559,6 @@ def sendJira(message){
 	echo response.data.toString()
 	
 	sendSlack("#FFFF00'", message)
-						
-//	slackSend (color: '#FFFF00', message: "Failed: " + message + " - " + "'${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'")
 }
 
 // Send a message to Slack

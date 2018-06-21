@@ -1,0 +1,189 @@
+/* Simple Maben build
+	- Maven build a WAR file
+	- Docker image is built
+	- Docker images is pushed to ECR
+	- Docker ECS commands are used to modify the task and services to deploy the newly build image.
+
+	-- Environment parameters need to be adjusted for this script ot work.
+*/
+
+pipeline {
+  agent any
+	environment { 
+        mvnHome = tool 'Maven_Config'
+		
+		// GitHub setup
+		workingGitURL= 'https://github.com/CA-MMISDigitalServices/Dev.git'     
+		workingBranch= 'dockerDeploy'
+		
+		//POM file locations for Maven
+		workingPOM = '/var/lib/jenkins/workspace/TestSnippitPipeline/SpringPOC'
+		
+		// Jenkins setup 
+		workingJenkinsDir= '/var/lib/jenkins/workspace'
+		workingJob= 'TestSnippitPipeline'
+		workingProject= 'SpringPOC'
+		
+		
+		// AWS code Deploy setup
+		AWSCDapplicationName= 'SpringPOCDocker'
+		AWSCDDeploymentGroupName= 'SpringPOCDockerDG'
+		AWSCDSubDirectory= 'SpringPOC'
+		
+		// Sonar 
+		workingSonarUrl= 'http://158.96.16.211:9000/'
+		
+		// Jira project setup
+		workingJiraProject ='PTP'
+		
+		// Docker
+		workingImageName='springpoc'
+		
+		// email 
+		workingEmailRecipients = 'randy.duart@dhcs.ca.gov'
+		
+		// 
+		workingMesage = 'test message'
+		
+		// ECR and ECS parameters
+		FAMILY='springpoctask'
+		NAME='springpoctask'
+		SERVICE_NAME='springpocservicename'
+		CLUSTER='SpringPOCECSCluster'
+		REPOSITORY_NAME='springpoc'
+		REGION='us-gov-west-1'
+		CONTAINERPORT='8080'
+		HOSTPORT='8888'
+    }
+	stages {
+		stage('Preparation') {
+			steps {
+				git url: "${workingGitURL}", branch: "${workingBranch}"
+			}
+		}
+		stage('Build') {
+            steps {
+				script {
+					sh "'${mvnHome}/bin/mvn' -X -B --file '${workingPOM}' -Dmaven.test.failure.ignore clean install cobertura:cobertura -Dcobertura.report.format=xml"
+				}
+            }
+            post {
+                always {
+                    echo 'Build Stage always'
+                }
+				failure {
+					echo 'Build Stage failure'
+				}
+				success {
+					echo 'Build Stage Success'
+				}	
+			} 
+        } 
+		stage('Docker Build - push Image') {
+			steps {
+				script {
+					echo 'Docker Build'
+
+					// Remove all docker images from local repos.
+					def COUNT = sh returnStdout: true, script: "docker images | grep ${workingImageName} | wc -l"
+
+					echo "Image count : ${COUNT}" 
+					
+					def intValue = COUNT.toInteger()
+					if ((intValue > 0)) {
+						echo 'Images exist -- Removing Images'
+						sh 'docker rmi -f $(docker images -q)'
+					}
+				
+					// Setup version tag.
+					def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
+					def version = pom.version.replace("-SNAPSHOT", ".${currentBuild.number}")
+					echo "version : ${version}"
+					
+					def (major, minor, increment, buildnum) = version.tokenize('.')
+					echo  "After tokenize major ${major}"
+
+					def tagVersion = major + '.' + minor + '.' + increment + '.SNAPSHOT' + ".${currentBuild.number}"
+					echo "tagVersion :  ${tagVersion}"
+					
+				echo '1'
+					// Login into ECR
+					sh "aws ecr get-login --no-include-email --region us-gov-west-1 > ecrlogin"
+			
+					// Change persmision and execute the login script from above get-login command 
+					sh "chmod 755 ecrlogin"
+					sh "./ecrlogin"
+					
+				echo '2'
+			    	//Store the repositoryUri as a variable 
+			    	def REPOSITORY_URI_TEMP= sh returnStdout: true, script: "aws ecr describe-repositories --repository-names ${REPOSITORY_NAME} --region ${REGION} | jq .repositories[].repositoryUri | tr -d '\n' "
+					echo "respository_URI_TEMP:${REPOSITORY_URI_TEMP}" + "<"
+					
+					def REPOSITORY_URI = REPOSITORY_URI_TEMP.toString().replaceAll('\\"','')		
+					echo "respository_URI :${REPOSITORY_URI}" + "<"
+					
+				echo '3'
+					// Build the Docker image
+					sh "docker build -f SpringPOC/Dockerfile  -t springpoc:${tagVersion} /var/lib/jenkins/workspace/TestSnippitPipeline/SpringPOC"
+					
+				echo '4'
+					// Tag the docker image
+					sh "docker tag springpoc:${tagVersion} ${REPOSITORY_URI}:${tagVersion}"
+					
+				echo '5'
+					// Push Docker image to ECR
+					sh "docker push ${REPOSITORY_URI}:${tagVersion}"
+
+                echo '6'
+					// Download the taskdef.json from S3
+					sh "aws s3 cp s3://environmentscripts/dockerbuildscripts/taskdef.json taskdef.json --region us-gov-west-1"
+				
+                    // Replace the variables in in the taskdef.json file.
+			    	sh "sed -e 's;%BUILD_NUMBER%;${tagVersion};g' -e 's;%REPOSITORY_URI%;${REPOSITORY_URI};g' -e 's;%FAMILY%;${FAMILY};g' -e 's;%NAME%;${NAME};g' -e 's;%CONTAINERPORT%;${CONTAINERPORT};g' -e 's;%HOSTPORT%;${HOSTPORT};g' taskdef.json > ${NAME}-${tagVersion}.json"
+
+				echo '7'
+                    // Register the task definition in the repository
+				    sh "aws ecs register-task-definition --family ${FAMILY} --cli-input-json file://${WORKSPACE}/${NAME}-${tagVersion}.json --region ${REGION}"
+
+				    def SERVICES= sh returnStdout: true, script:"aws ecs describe-services --services ${SERVICE_NAME} --cluster ${CLUSTER} --region ${REGION} | jq .failures[] | tr -d '\n'"
+					echo " Services: ${SERVICES}" + "<"
+					
+				echo '8'
+			    	//Get latest revision
+				    def REVISION= sh returnStdout: true, script: "aws ecs describe-task-definition --task-definition ${FAMILY} --region ${REGION} | jq .taskDefinition.revision | tr -d '\n'"
+					echo "Reversion: ${REVISION}" + "<"
+				
+				echo '9'
+	                // Create or update service
+				    if ( SERVICES == "" ) {
+					    echo "entered existing service"
+					    def DESIRED_COUNT= sh returnStdout: true, script: "aws ecs describe-services --services ${SERVICE_NAME} --cluster ${CLUSTER} --region ${REGION} |  jq .services[].desiredCount | tr -d '\n'"
+						echo "Desired_Count: ${DESIRED_COUNT}" + "<"
+						
+				    	if ( DESIRED_COUNT == "0" ) {
+					    	DESIRED_COUNT="1"
+				    	}
+						echo "Update existing service"
+						sh "aws ecs update-service --cluster ${CLUSTER} --region ${REGION} --service ${SERVICE_NAME} --task-definition ${FAMILY}:${REVISION} --desired-count ${DESIRED_COUNT}"
+				    
+					} else {      
+					
+				    	echo "Create new service"
+				    	sh "aws ecs create-service --service-name ${SERVICE_NAME} --desired-count 1 --task-definition ${FAMILY} --cluster ${CLUSTER} --region ${REGION}"
+				    } 
+				}	
+			}
+			post {
+				always {
+					echo 'Docker Build'
+				}
+				failure {	
+					echo 'Failure Docker Build'					
+				}
+				success {
+					echo 'Success Docker Build'
+				}
+			}
+		}
+	}
+}
