@@ -369,10 +369,12 @@ pipeline {
 				always {
 					echo 'Docker Build'
 				}
-				failure {	
-					echo 'Docker Step failed'	
-//					sendJira("Docker Step failed")
-					failedMessage = 'Docker Build or Publisd failed'					
+				failure {
+					script {
+						echo 'Docker Step failed'	
+//						sendJira("Docker Step failed")
+						failedMessage = 'Docker Build or Publisd failed'
+					}
 				}
 				success {
 					echo 'Success Docker Build'
@@ -391,9 +393,11 @@ pipeline {
 					echo 'Performance Testing Check'
                 }	
 				failure {
-					echo 'Performance TestingCheck'
-//					sendJira("Performance Test  Failed")
-					failedMessage = 'Performance Test Failed'	
+					script {
+						echo 'Performance TestingCheck'
+//						sendJira("Performance Test  Failed")
+						failedMessage = 'Performance Test Failed'	
+					}
 				}
 				success {
 					echo 'Performance Testing Check Success'
@@ -412,9 +416,11 @@ pipeline {
 					echo 'Performance Testing Report Check'
                 }	
 				failure {
-					echo 'Performance Testing Report Check'
-//					sendJira("Performance Test report Failure")
-					failedMessage = 'Performance Testing Report Failed'	
+					script {
+						echo 'Performance Testing Report Check'
+//						sendJira("Performance Test report Failure")
+						failedMessage = 'Performance Testing Report Failed'
+					}
 				}
 				success {
 					echo 'Performance Testing Report Check Success'
