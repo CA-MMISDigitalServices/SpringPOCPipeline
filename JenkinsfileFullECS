@@ -11,15 +11,19 @@ pipeline {
 	environment { 
         mvnHome = tool 'Maven_Config'
 		
+		//
+		// These parameters need to be update for each new project.
+		//
+		
 		// GitHub setup
 		workingGitURL= 'https://github.com/CA-MMISDigitalServices/Dev.git'     
 		workingBranch= 'dockerDeploy'
 		
-		//POM file locations for Maven
-		workingPOM = '/var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC'
+		//POM file locations for Maven  
+		workingPOM = '/var/lib/jenkins/workspace/TestPipelineFullECS/SpringPOC'
 		
-		// Jenkins setup 
-		workingJob= 'TestPipelineDocker'
+		// Jenkins setup  
+		workingJob= 'TestPipelineFullECS'   
 		workingProject= 'SpringPOC'
 		workingJenkinsDir= '/var/lib/jenkins/workspace'
 		
