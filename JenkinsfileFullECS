@@ -1,0 +1,535 @@
+/*	Jenkins pipeline for Docker build and push to docker Hub. 
+	- Maven is used for the build
+	- Docker image is built and push to Docker hub.
+	- AWS codedeploy is used to depoly the Docker container
+	
+	-- Environment parameters need to be adjusted for this script to work for a different build.
+*/
+
+pipeline {
+  agent any
+	environment { 
+        mvnHome = tool 'Maven_Config'
+		
+		// GitHub setup
+		workingGitURL= 'https://github.com/CA-MMISDigitalServices/Dev.git'     
+		workingBranch= 'dockerDeploy'
+		
+		//POM file locations for Maven
+		workingPOM = '/var/lib/jenkins/workspace/TestPipelineDocker/SpringPOC'
+		
+		// Jenkins setup 
+		workingJob= 'TestPipelineDocker'
+		workingProject= 'SpringPOC'
+		workingJenkinsDir= '/var/lib/jenkins/workspace'
+		
+		// Sonar 
+		workingSonarUrl= 'http://158.96.16.211:9000/'
+		
+		// Jira project setup
+		workingJiraProject ='PTP'
+		
+		// Docker
+		workingImageName='springpoc'
+		
+		// email 
+		workingEmailRecipients = 'randy.duart@dhcs.ca.gov'
+		
+		// 
+		workingMesage = 'test message'
+		
+		// ECR and ECS parameters
+		FAMILY='springpoctask'
+		NAME='springpoctask'
+		SERVICE_NAME='springpocservicename'
+		CLUSTER='SpringPOCECSCluster'
+		REPOSITORY_NAME='springpoc'
+		REGION='us-gov-west-1'
+		CONTAINERPORT='8080'
+		HOSTPORT='8888'
+    }
+	stages {
+		stage('Preparation') {
+			steps {
+				git url: "${workingGitURL}", branch: "${workingBranch}"
+			}
+		}
+		stage('Build') {
+            steps {
+				script {
+					sendSlack("#00FF00", "Build Started")
+					sh "'${mvnHome}/bin/mvn' -X -B --file '${workingPOM}' -Dmaven.test.failure.ignore clean install cobertura:cobertura -Dcobertura.report.format=xml"
+				}
+            }
+            post {
+                always {
+                    echo 'Build Stage always'
+                }
+				failure {
+					echo 'Build Stage failure'
+					script {
+						sendJira("Maven Build Failed")
+						
+					} 
+				}
+				success {
+					echo 'Build Stage Success'
+					sendSlack("#00FF00", "Maven Build SUCCESSFUL")
+				}	
+			} 
+        } 
+		stage('SonarQube analysis') { 
+    		steps { 
+				withSonarQubeEnv('SonarQubeServer') {
+					sh '/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/Sonar/bin/sonar-scanner' +
+					' -Dsonar.host.url="${workingSonarUrl}"' +
+					' -Dsonar.projectVersion=1.0' +
+					' -Dsonar.sourceEncoding=UTF-8' +
+					' -Dsonar.projectKey="${workingJob}"' +
+					' -Dsonar.java.binaries="${workingJenkinsDir}"/"${workingJob}"/"${workingProject}"/target/classes' +
+					' -Dsonar.sources="${workingProject}"/src' +
+					' -Dsonar.projectBaseDir="${workingJenkinsDir}"/"${workingJob}"'
+				}
+			}
+			post {
+                always {
+                    echo 'SonarQube Analysis  Done'
+                }
+				failure {
+					echo 'SonarQube Analysis  failure'
+					script {
+						sendJira("Sonar Analysis Failed")
+					}
+				}
+				success {
+					echo 'SonarQube Analysis Success'
+				}	
+			}
+		} 
+    	stage('SonarQube Quality Gate') { 
+			steps {
+				script {
+					timeout(time: 1, unit: 'HOURS') { 
+						echo '************ Inside Quality Gate'
+						qualityGate = waitForQualityGate() 
+						echo qualityGate.status.toString() 
+						if (qualityGate.status != 'OK') {
+							
+							sendJira("Pipeline aborted due to quality gate failure: ${qualityGate.status}")
+							
+							// Fail the build
+							error "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
+						}
+					}
+				}
+			}
+			post {
+                always {
+                    echo 'SonarQube Quality Gate  Done'
+                }
+				failure {
+					echo 'SonarQube Quality Gate  failure'
+					sendJira("Sonar Quality Failed")
+				}
+				success {
+					echo 'SonarQube Quality Gate Success'
+				}	
+			}
+		}
+		stage('Unit Test Report') {   
+            steps {
+				junit '**/target/surefire-reports/*.xml'
+	    	}     
+        	post {
+				always {
+                 	echo 'always'
+                }
+				changed {
+		 			echo 'change'
+				}
+				aborted {
+					echo 'aborted'
+				}
+				failure {
+					echo 'failure'
+					sendJira("JUnit Test Failed")
+				}
+				success {
+					echo 'success'
+				}
+				unstable {
+					echo 'unstable'
+					sendJira("Unit Test Conditions Failed")
+				}
+            }
+        } 
+		stage('Code Coverage Report') {   
+            steps {
+				cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: '**/target/site/cobertura/coverage.xml', conditionalCoverageTargets: '70, 0, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '80, 0, 0', maxNumberOfBuilds: 0, methodCoverageTargets: '80, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+	    	}
+			post {
+                always {
+                    echo 'Code Coverage Report  Done'
+                }
+				failure {
+					echo 'Code Coverage Report failure'
+					sendJira("Code Coverage Failed")
+				}
+				success {
+					echo 'Code Coverage Report Success'
+				}	
+			}
+		}  
+		stage('Jira Update Issues') {
+			steps {
+				echo 'Jira Update Issues'
+				
+				step([$class: 'hudson.plugins.jira.JiraIssueUpdater', 
+					issueSelector: [$class: 'hudson.plugins.jira.selector.DefaultIssueSelector'], 
+					scm: [$class: 'GitSCM', branches: [[name: '*/"${workingBranch}"']], 
+					userRemoteConfigs: [[url: "${workingGitURL}"]]]])
+			}
+			post {
+                always {
+					echo 'Jira Update Issues'
+                }	
+				failure {
+					echo 'Jira Update Issues  failure'
+					script {
+						echo 'JIRA update Issues failure'
+						sendJira("Maven Nexus Deploy Failed")
+					}
+				}
+				success {
+					echo 'Jira Update Issues Success'
+				}
+			}		
+		} 
+		stage('Security Dependency Check Publisher') {
+			steps {
+
+				echo 'Security Dependency Check'
+				dependencyCheckAnalyzer datadir: '', hintsFile: '', includeCsvReports: false, includeHtmlReports: false, includeJsonReports: false, includeVulnReports: false, isAutoupdateDisabled: false, outdir: '', scanpath: '', skipOnScmChange: false, skipOnUpstreamChange: false, suppressionFile: '', zipExtensions: ''
+			}
+			post {
+				always {
+					echo 'Security Dependency Check'
+				}	
+				failure {
+					script {
+						echo 'Security Dependency Check  failure'
+						sendJira("Security Dependency Check Failed")
+					}
+				}
+				success {
+					echo 'Security Dependency Check Success'
+				}
+			}
+		}	
+		stage('Security Dependency Publisher') {
+			steps {
+				echo 'Security Dependency Check'			
+				
+//				unstash "dependency-check-report"
+				
+				dependencyCheckPublisher canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '', unHealthy: ''
+			}
+			post {
+                always {
+					echo 'Security Dependency Publisher'
+                }	
+				failure {
+					script {
+						echo 'Security Dependency Publisher  failure'
+						sendJira("Security Dependency Publisher Failed")
+					}
+				}
+				success {
+					echo 'Security Dependency Publisher Success'
+				}
+			}
+		} 
+		stage('Docker Build - Push Image - Deploy') {
+			steps {
+				script {
+					echo 'Docker Build'
+
+					// Remove all docker images from local repos.
+					def COUNT = sh returnStdout: true, script: "docker images | grep ${workingImageName} | wc -l"
+
+					echo "Image count : ${COUNT}" 
+					
+					def intValue = COUNT.toInteger()
+					if ((intValue > 0)) {
+						echo 'Images exist -- Removing Images'
+						sh 'docker rmi -f $(docker images -q)'
+					}
+				
+					// Setup version tag.
+					def pom = readMavenPom file: "${workingJenkinsDir}/${workingJob}/${workingProject}/pom.xml"
+					def version = pom.version.replace("-SNAPSHOT", ".${currentBuild.number}")
+					echo "version : ${version}"
+					
+					def (major, minor, increment, buildnum) = version.tokenize('.')
+					echo  "After tokenize major ${major}"
+
+					def tagVersion = major + '.' + minor + '.' + increment + '.SNAPSHOT' + ".${currentBuild.number}"
+					echo "tagVersion :  ${tagVersion}"
+					
+				echo '1'
+					// Login into ECR
+					sh "aws ecr get-login --no-include-email --region us-gov-west-1 > ecrlogin"
+			
+					// Change persmision and execute the login script from above get-login command 
+					sh "chmod 755 ecrlogin"
+					sh "./ecrlogin"
+					
+				echo '2'
+			    	//Store the repositoryUri as a variable 
+			    	def REPOSITORY_URI_TEMP= sh returnStdout: true, script: "aws ecr describe-repositories --repository-names ${REPOSITORY_NAME} --region ${REGION} | jq .repositories[].repositoryUri | tr -d '\n' "
+					echo "respository_URI_TEMP:${REPOSITORY_URI_TEMP}" + "<"
+					
+					def REPOSITORY_URI = REPOSITORY_URI_TEMP.toString().replaceAll('\\"','')		
+					echo "respository_URI :${REPOSITORY_URI}" + "<"
+					
+				echo '3'
+					// Build the Docker image
+					sh "docker build -f SpringPOC/Dockerfile  -t springpoc:${tagVersion} /var/lib/jenkins/workspace/TestSnippitPipeline/SpringPOC"
+					
+				echo '4'
+					// Tag the docker image
+					sh "docker tag springpoc:${tagVersion} ${REPOSITORY_URI}:${tagVersion}"
+					
+				echo '5'
+					// Push Docker image to ECR
+					sh "docker push ${REPOSITORY_URI}:${tagVersion}"
+
+                echo '6'
+					// Download the taskdef.json from S3
+					sh "aws s3 cp s3://environmentscripts/dockerbuildscripts/taskdef.json taskdef.json --region us-gov-west-1"
+				
+                    // Replace the variables in in the taskdef.json file.
+			    	sh "sed -e 's;%BUILD_NUMBER%;${tagVersion};g' -e 's;%REPOSITORY_URI%;${REPOSITORY_URI};g' -e 's;%FAMILY%;${FAMILY};g' -e 's;%NAME%;${NAME};g' -e 's;%CONTAINERPORT%;${CONTAINERPORT};g' -e 's;%HOSTPORT%;${HOSTPORT};g' taskdef.json > ${NAME}-${tagVersion}.json"
+
+				echo '7'
+                    // Register the task definition in the repository
+				    sh "aws ecs register-task-definition --family ${FAMILY} --cli-input-json file://${WORKSPACE}/${NAME}-${tagVersion}.json --region ${REGION}"
+
+				    def SERVICES= sh returnStdout: true, script:"aws ecs describe-services --services ${SERVICE_NAME} --cluster ${CLUSTER} --region ${REGION} | jq .failures[] | tr -d '\n'"
+					echo " Services: ${SERVICES}" + "<"
+					
+				echo '8'
+			    	//Get latest revision
+				    def REVISION= sh returnStdout: true, script: "aws ecs describe-task-definition --task-definition ${FAMILY} --region ${REGION} | jq .taskDefinition.revision | tr -d '\n'"
+					echo "Reversion: ${REVISION}" + "<"
+				
+				echo '9'
+	                // Create or update service
+				    if ( SERVICES == "" ) {
+					    echo "entered existing service"
+					    def DESIRED_COUNT= sh returnStdout: true, script: "aws ecs describe-services --services ${SERVICE_NAME} --cluster ${CLUSTER} --region ${REGION} |  jq .services[].desiredCount | tr -d '\n'"
+						echo "Desired_Count: ${DESIRED_COUNT}" + "<"
+						
+				    	if ( DESIRED_COUNT == "0" ) {
+					    	DESIRED_COUNT="1"
+				    	}
+						echo "Update existing service"
+						sh "aws ecs update-service --cluster ${CLUSTER} --region ${REGION} --service ${SERVICE_NAME} --task-definition ${FAMILY}:${REVISION} --desired-count ${DESIRED_COUNT}"
+				    
+					} else {      
+					
+				    	echo "Create new service"
+				    	sh "aws ecs create-service --service-name ${SERVICE_NAME} --desired-count 1 --task-definition ${FAMILY} --cluster ${CLUSTER} --region ${REGION}"
+				    } 
+				}	
+			}
+			post {
+				always {
+					echo 'Docker Build'
+				}
+				failure {	
+					echo 'Docker Step failed'	
+					sendJira("Docker Step failed")					
+				}
+				success {
+					echo 'Success Docker Build'
+				}
+			}
+		}
+		stage('Performance Testing') {
+			steps {
+				node('DependencyCheckNode'){ 
+					echo 'Performance Testing'
+					sh "/var/lib/apache-jmeter-4.0/bin/jmeter -n -j jmeter.save.saveservice.output_format=xml -t /var/lib/apache-jmeter-4.0/TTGUIScript.jmx -l /var/lib/jenkins/workspace/JMeter/TTGUILog.jtl"
+					}
+			}
+			post {
+                always {
+					echo 'Performance Testing Check'
+                }	
+				failure {
+					echo 'Performance TestingCheck'
+					sendJira("Unit Test Conditions Failed")
+				}
+				success {
+					echo 'Performance Testing Check Success'
+				}
+			}
+		}
+		stage('Performance Testing Report') {
+			steps {
+				node('DependencyCheckNode'){ 
+					echo 'Performance Testing Report'
+					perfReport modePerformancePerTestCase: true, modeThroughput: true, percentiles: '0,50,90,100', sourceDataFiles: '/var/lib/jenkins/workspace/JMeter/TTGUILog.jtl'
+					}
+			}
+			post {
+                always {
+					echo 'Performance Testing Report Check'
+                }	
+				failure {
+					echo 'Performance Testing Report Check'
+					sendJira("Performance Test report Failure")
+				}
+				success {
+					echo 'Performance Testing Report Check Success'
+				}
+			}
+		}
+		stage('Run Browser testing') {
+            parallel {
+                stage('Windows IE Testing') {
+                    agent {
+                        label "DependencyCheckNode"
+                    }
+                    steps {
+                        sh "ls"
+                    }
+                    post {
+                        always {
+                            echo 'Windows IE Testing'
+                        }
+                    }
+                }
+                stage('Windows Chrome Testing') {
+                    agent {
+                        label "DependencyCheckNode"
+                    }
+                    steps {
+                        sh "ls"
+                    }
+                    post {
+                        always {
+                            echo 'Windows Chrome Testing'
+                        }
+                    }
+                }
+				stage('Windows Firefox Testing') {
+                    agent {
+                        label "DependencyCheckNode"
+                    }
+                    steps {
+                        sh "ls"
+                    }
+                    post {
+                        always {
+                            echo 'Windows Firefox Testing'
+                        }
+                    }
+                }
+            }
+        }
+		stage('Clean Up') {
+			steps {
+				cleanWs notFailBuild: true
+			}
+			post {
+                always {
+					echo 'Clean Up always'
+                }	
+				failure {
+					echo 'Clean Up failure'
+					sendJira("Clean Up Failure")
+				}
+				success {
+					echo 'Clean Up Success'
+					sendSlack("#00FF00", "Build SUCCESSFUL")
+				}
+			}
+		}  
+	}
+	post {
+        always {
+			echo 'Clean Up always'
+        }	
+		failure {
+			echo 'Clean Up failure'
+			sendJira("Clean Up Failure")
+		}
+		success {
+			echo 'Clean Up Success'
+			sendSlack("#00FF00", "Build SUCCESSFUL")
+		}
+	}
+}
+
+// Function defined.
+
+// Get status for Email.
+def getChangeString() {
+    MAX_MSG_LEN = 100
+    def changeString = ""
+
+    echo "Gathering SCM changes"
+    def changeLogSets = currentBuild.changeSets
+    for (int i = 0; i < changeLogSets.size(); i++) {
+        def entries = changeLogSets[i].items
+        for (int j = 0; j < entries.length; j++) {
+            def entry = entries[j]
+            truncated_msg = entry.msg.take(MAX_MSG_LEN)
+            changeString += " - ${truncated_msg} [${entry.author}]\n"
+        }
+    }
+
+    if (!changeString) {
+        changeString = " - No new changes"
+    }
+    return changeString
+}
+
+//Send Email 
+def sendEmail(status) {
+ 		
+	emailext (
+			attachLog: true,
+			to: "${workingEmailRecipients}",
+			from: "Jenkins.Admin@dhcs.ca.gov",
+			subject: "Build ${env.BUILD_NUMBER} - " + status + " ${env.BUILD_NUMBER}",
+			body: "Changes:\n " + getChangeString() + "\n\n Check console output at: ${env.BUILD_URL}" + "\n")
+
+			
+}
+
+// Open issues with JIRA.
+def sendJira(message){
+
+	echo 'Send Jira Message'
+	testIssue = [fields: [ project: [key: "${workingJiraProject}"],
+			summary: 'Jenkins Build Failure.',
+			description: "Jenkins -  " + message + " - " + "Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
+			priority: [name: 'Highest'],
+			issuetype: [name: 'Bug']]]
+
+	response = jiraNewIssue issue: testIssue, site: 'CAMMIS'
+
+	echo response.successful.toString()
+	echo response.data.toString()
+	
+	sendSlack("#FFFF00'", message)
+}
+
+// Send a message to Slack
+def sendSlack(color, message) {
+
+	slackSend (color: color, message: message + " - Job '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'")
+}
