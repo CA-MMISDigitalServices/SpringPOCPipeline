@@ -12,7 +12,7 @@ pipeline {
         mvnHome = tool 'Maven_Config'
 		
 		//
-		// These parameters need to be update for each new project.
+		// These parameters need to be updated for each new project.
 		//
 		
 		// GitHub setup
@@ -40,7 +40,7 @@ pipeline {
 		workingEmailRecipients = 'randy.duart@dhcs.ca.gov'
 		
 		// 
-		workingMesage = 'test message'
+		failedMesage = 'test message'
 		
 		// ECR and ECS parameters
 		FAMILY='springpoctask'
@@ -72,7 +72,8 @@ pipeline {
 				failure {
 					echo 'Build Stage failure'
 					script {
-						sendJira("Maven Build Failed")
+//						sendJira("Maven Build Failed")
+						failedMesage = 'Maven Build Failed'
 						
 					} 
 				}
@@ -102,7 +103,8 @@ pipeline {
 				failure {
 					echo 'SonarQube Analysis  failure'
 					script {
-						sendJira("Sonar Analysis Failed")
+//						sendJira("Sonar Analysis Failed")
+						failedMesage = 'Sonar Analysis Failed'
 					}
 				}
 				success {
@@ -119,8 +121,8 @@ pipeline {
 						echo qualityGate.status.toString() 
 						if (qualityGate.status != 'OK') {
 							
-							sendJira("Pipeline aborted due to quality gate failure: ${qualityGate.status}")
-							
+//							sendJira("Pipeline aborted due to quality gate failure: ${qualityGate.status}")
+							failedMesage = "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
 							// Fail the build
 							error "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
 						}
@@ -133,7 +135,8 @@ pipeline {
                 }
 				failure {
 					echo 'SonarQube Quality Gate  failure'
-					sendJira("Sonar Quality Failed")
+//					sendJira("Sonar Quality Failed")
+					failedMesage = 'Sonar Quality Failed'
 				}
 				success {
 					echo 'SonarQube Quality Gate Success'
@@ -156,14 +159,17 @@ pipeline {
 				}
 				failure {
 					echo 'failure'
-					sendJira("JUnit Test Failed")
+//					sendJira("JUnit Test Failed")
+					failedMesage = 'JUnit Test Failed'
 				}
 				success {
 					echo 'success'
 				}
 				unstable {
 					echo 'unstable'
-					sendJira("Unit Test Conditions Failed")
+//					sendJira("Unit Test Conditions Failed")
+					failedMesage = 'Unit Test Conditions Failed'
+					
 				}
             }
         } 
@@ -177,7 +183,8 @@ pipeline {
                 }
 				failure {
 					echo 'Code Coverage Report failure'
-					sendJira("Code Coverage Failed")
+//					sendJira("Code Coverage Failed")
+					failedMesage = 'Code Coverage Failed'
 				}
 				success {
 					echo 'Code Coverage Report Success'
@@ -201,7 +208,8 @@ pipeline {
 					echo 'Jira Update Issues  failure'
 					script {
 						echo 'JIRA update Issues failure'
-						sendJira("Maven Nexus Deploy Failed")
+//						sendJira("Maven Nexus Deploy Failed")
+						failedMesage = 'Jira Update Issues Failed'
 					}
 				}
 				success {
@@ -222,7 +230,8 @@ pipeline {
 				failure {
 					script {
 						echo 'Security Dependency Check  failure'
-						sendJira("Security Dependency Check Failed")
+//						sendJira("Security Dependency Check Failed")
+						failedMesage = 'Security Dependency Check Failed'
 					}
 				}
 				success {
@@ -245,7 +254,8 @@ pipeline {
 				failure {
 					script {
 						echo 'Security Dependency Publisher  failure'
-						sendJira("Security Dependency Publisher Failed")
+//						sendJira("Security Dependency Publisher Failed")
+						failedMesage = 'Security Dependency Publisher Failed'
 					}
 				}
 				success {
@@ -298,7 +308,7 @@ pipeline {
 					
 				echo '3'
 					// Build the Docker image
-					sh "docker build -f SpringPOC/Dockerfile  -t springpoc:${tagVersion} /var/lib/jenkins/workspace/TestSnippitPipeline/SpringPOC"
+					sh "docker build -f SpringPOC/Dockerfile  -t springpoc:${tagVersion} ${workingJenkinsDir}/${workingJob}/${workingProject}"
 					
 				echo '4'
 					// Tag the docker image
@@ -353,7 +363,8 @@ pipeline {
 				}
 				failure {	
 					echo 'Docker Step failed'	
-					sendJira("Docker Step failed")					
+//					sendJira("Docker Step failed")
+					failedMesage = 'Docker Build or Publisd failed'					
 				}
 				success {
 					echo 'Success Docker Build'
@@ -373,7 +384,8 @@ pipeline {
                 }	
 				failure {
 					echo 'Performance TestingCheck'
-					sendJira("Unit Test Conditions Failed")
+//					sendJira("Performance Test  Failed")
+					failedMesage = 'Performance Test Failed	
 				}
 				success {
 					echo 'Performance Testing Check Success'
@@ -393,7 +405,8 @@ pipeline {
                 }	
 				failure {
 					echo 'Performance Testing Report Check'
-					sendJira("Performance Test report Failure")
+//					sendJira("Performance Test report Failure")
+					failedMesage = 'Performance Testing Report Failed	
 				}
 				success {
 					echo 'Performance Testing Report Check Success'
@@ -453,7 +466,8 @@ pipeline {
                 }	
 				failure {
 					echo 'Clean Up failure'
-					sendJira("Clean Up Failure")
+//					sendJira(failedMesage)
+					failedMesage = 'Clean Up Workspace Failed'
 				}
 				success {
 					echo 'Clean Up Success'
@@ -468,7 +482,7 @@ pipeline {
         }	
 		failure {
 			echo 'Clean Up failure'
-			sendJira("Clean Up Failure")
+			sendJira(failedMesage)
 		}
 		success {
 			echo 'Clean Up Success'
@@ -519,7 +533,7 @@ def sendJira(message){
 
 	echo 'Send Jira Message'
 	testIssue = [fields: [ project: [key: "${workingJiraProject}"],
-			summary: 'Jenkins Build Failure.',
+			summary: 'SpringPOC Build : ',
 			description: "Jenkins -  " + message + " - " + "Job name: '${env.JOB_NAME} - Build Number: ${env.BUILD_NUMBER}  URL: ${env.BUILD_URL}'",
 			priority: [name: 'Highest'],
 			issuetype: [name: 'Bug']]]
