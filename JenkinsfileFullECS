@@ -40,7 +40,7 @@ pipeline {
 		workingEmailRecipients = 'randy.duart@dhcs.ca.gov'
 		
 		// 
-		failedMesage = 'test message'
+		failedMessage = 'test message'
 		
 		// ECR and ECS parameters
 		FAMILY='springpoctask'
@@ -73,7 +73,7 @@ pipeline {
 					echo 'Build Stage failure'
 					script {
 //						sendJira("Maven Build Failed")
-						failedMesage = 'Maven Build Failed'
+						failedMessage = 'Maven Build Failed'
 						
 					} 
 				}
@@ -104,7 +104,7 @@ pipeline {
 					echo 'SonarQube Analysis  failure'
 					script {
 //						sendJira("Sonar Analysis Failed")
-						failedMesage = 'Sonar Analysis Failed'
+						failedMessage = 'Sonar Analysis Failed'
 					}
 				}
 				success {
@@ -122,7 +122,7 @@ pipeline {
 						if (qualityGate.status != 'OK') {
 							
 //							sendJira("Pipeline aborted due to quality gate failure: ${qualityGate.status}")
-							failedMesage = "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
+							failedMessage = "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
 							// Fail the build
 							error "Pipeline aborted due to quality gate failure: ${qualityGate.status}"
 						}
@@ -134,9 +134,11 @@ pipeline {
                     echo 'SonarQube Quality Gate  Done'
                 }
 				failure {
-					echo 'SonarQube Quality Gate  failure'
-//					sendJira("Sonar Quality Failed")
-					failedMesage = 'Sonar Quality Failed'
+					script {
+						echo 'SonarQube Quality Gate  failure'
+//						sendJira("Sonar Quality Failed")
+						failedMessage = 'Sonar Quality Failed'
+					}
 				}
 				success {
 					echo 'SonarQube Quality Gate Success'
@@ -158,17 +160,21 @@ pipeline {
 					echo 'aborted'
 				}
 				failure {
-					echo 'failure'
-//					sendJira("JUnit Test Failed")
-					failedMesage = 'JUnit Test Failed'
+					script {
+						echo 'failure'
+//						sendJira("JUnit Test Failed")
+						failedMessage = 'JUnit Test Failed'
+					}
 				}
 				success {
 					echo 'success'
 				}
 				unstable {
-					echo 'unstable'
-//					sendJira("Unit Test Conditions Failed")
-					failedMesage = 'Unit Test Conditions Failed'
+					script {
+						echo 'unstable'
+//						sendJira("Unit Test Conditions Failed")
+						failedMessage = 'Unit Test Conditions Failed'
+					}
 					
 				}
             }
@@ -182,9 +188,11 @@ pipeline {
                     echo 'Code Coverage Report  Done'
                 }
 				failure {
-					echo 'Code Coverage Report failure'
-//					sendJira("Code Coverage Failed")
-					failedMesage = 'Code Coverage Failed'
+					script {
+						echo 'Code Coverage Report failure'
+//						sendJira("Code Coverage Failed")
+						failedMessage = 'Code Coverage Failed'
+						}
 				}
 				success {
 					echo 'Code Coverage Report Success'
@@ -209,7 +217,7 @@ pipeline {
 					script {
 						echo 'JIRA update Issues failure'
 //						sendJira("Maven Nexus Deploy Failed")
-						failedMesage = 'Jira Update Issues Failed'
+						failedMessage = 'Jira Update Issues Failed'
 					}
 				}
 				success {
@@ -231,7 +239,7 @@ pipeline {
 					script {
 						echo 'Security Dependency Check  failure'
 //						sendJira("Security Dependency Check Failed")
-						failedMesage = 'Security Dependency Check Failed'
+						failedMessage = 'Security Dependency Check Failed'
 					}
 				}
 				success {
@@ -255,7 +263,7 @@ pipeline {
 					script {
 						echo 'Security Dependency Publisher  failure'
 //						sendJira("Security Dependency Publisher Failed")
-						failedMesage = 'Security Dependency Publisher Failed'
+						failedMessage = 'Security Dependency Publisher Failed'
 					}
 				}
 				success {
@@ -364,7 +372,7 @@ pipeline {
 				failure {	
 					echo 'Docker Step failed'	
 //					sendJira("Docker Step failed")
-					failedMesage = 'Docker Build or Publisd failed'					
+					failedMessage = 'Docker Build or Publisd failed'					
 				}
 				success {
 					echo 'Success Docker Build'
@@ -385,7 +393,7 @@ pipeline {
 				failure {
 					echo 'Performance TestingCheck'
 //					sendJira("Performance Test  Failed")
-					failedMesage = 'Performance Test Failed'	
+					failedMessage = 'Performance Test Failed'	
 				}
 				success {
 					echo 'Performance Testing Check Success'
@@ -406,7 +414,7 @@ pipeline {
 				failure {
 					echo 'Performance Testing Report Check'
 //					sendJira("Performance Test report Failure")
-					failedMesage = 'Performance Testing Report Failed'	
+					failedMessage = 'Performance Testing Report Failed'	
 				}
 				success {
 					echo 'Performance Testing Report Check Success'
@@ -466,8 +474,8 @@ pipeline {
                 }	
 				failure {
 					echo 'Clean Up failure'
-//					sendJira(failedMesage)
-					failedMesage = 'Clean Up Workspace Failed'
+//					sendJira(failedMessage)
+					failedMessage = 'Clean Up Workspace Failed'
 				}
 				success {
 					echo 'Clean Up Success'
@@ -482,7 +490,7 @@ pipeline {
         }	
 		failure {
 			echo 'Clean Up failure'
-			sendJira(failedMesage)
+			sendJira(failedMessage)
 		}
 		success {
 			echo 'Clean Up Success'
