@@ -479,9 +479,11 @@ pipeline {
 					echo 'Clean Up always'
                 }	
 				failure {
-					echo 'Clean Up failure'
-//					sendJira(failedMessage)
-					failedMessage = 'Clean Up Workspace Failed'
+					script {
+						echo 'Clean Up failure'
+//						sendJira(failedMessage)
+						failedMessage = 'Clean Up Workspace Failed'
+					}
 				}
 				success {
 					echo 'Clean Up Success'
