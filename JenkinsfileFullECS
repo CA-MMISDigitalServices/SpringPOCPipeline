@@ -385,7 +385,7 @@ pipeline {
 				failure {
 					echo 'Performance TestingCheck'
 //					sendJira("Performance Test  Failed")
-					failedMesage = 'Performance Test Failed	
+					failedMesage = 'Performance Test Failed'	
 				}
 				success {
 					echo 'Performance Testing Check Success'
@@ -406,7 +406,7 @@ pipeline {
 				failure {
 					echo 'Performance Testing Report Check'
 //					sendJira("Performance Test report Failure")
-					failedMesage = 'Performance Testing Report Failed	
+					failedMesage = 'Performance Testing Report Failed'	
 				}
 				success {
 					echo 'Performance Testing Report Check Success'
