@@ -41,7 +41,7 @@ pipeline {
 //		TAGVERSION="1.0.2-SNAPSHOT.137"
 		
     }
-	stage
+	stages {
 		stage('Preparation') {
 			steps {
 			echo 'Prep'
