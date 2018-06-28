@@ -16,9 +16,9 @@ pipeline {
 		//
 		
 		// Jenkins setup  
-		workingJob= 'TestPipelineECSDeploy'   
-		workingProject= 'SpringPOC'
-		workingJenkinsDir= '/var/lib/jenkins/workspace'
+//		workingJob= 'TestPipelineECSDeploy'   
+//		workingProject= 'SpringPOC'
+//		workingJenkinsDir= '/var/lib/jenkins/workspace'
 		
 		// Docker
 		workingImageName='springpoc'
@@ -38,7 +38,8 @@ pipeline {
 		REGION='us-gov-west-1'
 		CONTAINERPORT='8080'
 		HOSTPORT='8888'
-//		TAGVERSION="1.0.2-SNAPSHOT.137"
+		// Commented out  -- this value come from the Choice parameters
+//		TAGVERSION="1.0.2-SNAPSHOT.137"    
 		
     }
 	stages {
