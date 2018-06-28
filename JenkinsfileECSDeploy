@@ -26,15 +26,15 @@ pipeline {
 		failedMessage = 'test message'
 		
 		// ECR and ECS parameters
-		FAMILY='springpoctask'
-		CONTAINERNAME='springpoctask'
-		SERVICE_NAME='springpocservicename'
-		CLUSTER='SpringPOCECSCluster'
-		REPOSITORY_NAME='springpoc'
-		REGION='us-gov-west-1'
-		CONTAINERPORT='8080'
-		HOSTPORT='8888'
 		// Commented out  -- this value come from the Choice parameters
+//		FAMILY='springpoctask'
+//		CONTAINERNAME='springpoctask'
+//		SERVICE_NAME='springpocservicename'
+//		CLUSTER='SpringPOCECSCluster'
+//		REPOSITORY_NAME='springpoc'
+//		REGION='us-gov-west-1'
+//		CONTAINERPORT='8080'
+//		HOSTPORT='8888'
 //		TAGVERSION="1.0.2-SNAPSHOT.137"    
 		
     }
