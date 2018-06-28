@@ -74,7 +74,7 @@ pipeline {
 					sh "aws s3 cp s3://environmentscripts/dockerbuildscripts/taskdef.json taskdef.json --region us-gov-west-1"
 				
                     // Replace the variables in in the taskdef.json file.
-			    	sh "sed -e 's;%BUILD_NUMBER%;${TAGVERSION};g' -e 's;%REPOSITORY_URI%;${REPOSITORY_URI};g' -e 's;%FAMILY%;${FAMILY};g' -e 's;%NAME%;${CONTAINERNAME};g' -e 's;%CONTAINERPORT%;${CONTAINERPORT};g' -e 's;%HOSTPORT%;${HOSTPORT};g' taskdef.json > ${NAME}-${tagVersion}.json"
+			    	sh "sed -e 's;%BUILD_NUMBER%;${TAGVERSION};g' -e 's;%REPOSITORY_URI%;${REPOSITORY_URI};g' -e 's;%FAMILY%;${FAMILY};g' -e 's;%NAME%;${CONTAINERNAME};g' -e 's;%CONTAINERPORT%;${CONTAINERPORT};g' -e 's;%HOSTPORT%;${HOSTPORT};g' taskdef.json > ${CONTAINERNAME}-${tagVersion}.json"
 
 				echo '7'
                     // Register the task definition in the repository
