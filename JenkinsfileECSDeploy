@@ -22,7 +22,7 @@ pipeline {
 		// email 
 		workingEmailRecipients = 'DHCSJenkinGroup@dhcs.ca.gov'
 		
-		// 
+		// Failed aMaeeage field
 		failedMessage = 'test message'
 		
 		// ECR and ECS parameters
@@ -32,7 +32,7 @@ pipeline {
 //		SERVICE_NAME='springpocservicename'
 //		CLUSTER='SpringPOCECSCluster'
 //		REPOSITORY_NAME='springpoc'
-//		REGION='us-gov-west-1'
+		REGION='us-gov-west-1'
 //		CONTAINERPORT='8080'
 //		HOSTPORT='8888'
 //		TAGVERSION="1.0.2-SNAPSHOT.137"    
