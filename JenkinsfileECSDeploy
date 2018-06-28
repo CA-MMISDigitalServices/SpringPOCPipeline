@@ -1,9 +1,53 @@
-/*	Jenkins pipeline for Docker build and push to docker Hub. 
-	- Maven is used for the build
-	- Docker image is built and push to Docker hub.
-	- AWS codedeploy is used to depoly the Docker container
+/*	Jenkins pipeline to Deploy Docker images to ECS. 
+
 	
 	-- Environment parameters need to be adjusted for this script to work for a different build.
+	
+	
+		ECR and ECS Choice parameters that need to be created
+		 
+			Select "This project is parameterized"  Main project configuration screen
+			Select "Add parameters"
+			Select "String Parameters"   
+		 	For Name enter FAMILY
+			For Default Value enter springpoctask
+			Use the list below to build the Name and Default Values
+		
+				FAMILY='springpoctask'
+				CONTAINERNAME='springpoctask'
+				SERVICE_NAME='springpocservicename'
+				CLUSTER='SpringPOCECSCluster'
+				CONTAINERPORT='8080'
+				HOSTPORT='8888'
+				REPOSITORY_NAME='springpoc'
+
+		 	For TAGVERSION a script needs to be ran to get the list of Tags from the repository.
+			Select "Add parameters"
+			Select Extended Choice Parameters
+			For Name enter TAGVERSION
+			
+			TAGVERSION="1.0.2-SNAPSHOT.137"
+			
+			Select Groovy Script and copy for following script.
+			Change the <repository name> in the first line in the Groovy script
+			
+			def cmd = 'aws ecr list-images  --repository-name <repository name> --region us-gov-west-1'
+			def sout = new StringBuffer(), serr = new StringBuffer()
+			def proc = cmd.execute()
+			proc.consumeProcessOutput(sout, serr)
+			proc.waitForOrKill(1000)
+			def fileName = "a.out"
+			def inputFile = new File("/var/lib/jenkins/workspace/" + fileName)
+			inputFile.write(sout.toString())
+			def cmd1 = 'jq .imageIds[].imageTag  /var/lib/jenkins/workspace/a.out'
+			def sout1 = new StringBuffer(), serr1 = new StringBuffer()
+			def proc1 = cmd1.execute()
+			proc1.consumeProcessOutput(sout1, serr1)
+			proc1.waitForOrKill(1000)
+			def str = sout1.toString().replaceAll('\\"',',')
+			def str1 = str.replaceAll('\\\n','')
+			return[str1]		
+		
 */
 
 pipeline {
@@ -15,27 +59,14 @@ pipeline {
 		// These parameters need to be updated for each new project.
 		//
 		
-		
-		// Docker
-//		workingImageName='springpoc'
-		
 		// email 
 		workingEmailRecipients = 'DHCSJenkinGroup@dhcs.ca.gov'
 		
 		// Failed aMaeeage field
 		failedMessage = 'test message'
 		
-		// ECR and ECS parameters
-		// Commented out  -- this value come from the Choice parameters
-//		FAMILY='springpoctask'
-//		CONTAINERNAME='springpoctask'
-//		SERVICE_NAME='springpocservicename'
-//		CLUSTER='SpringPOCECSCluster'
-//		REPOSITORY_NAME='springpoc'
+		// Default region for GovCloud
 		REGION='us-gov-west-1'
-//		CONTAINERPORT='8080'
-//		HOSTPORT='8888'
-//		TAGVERSION="1.0.2-SNAPSHOT.137"    
 		
     }
 	stages {
@@ -75,7 +106,7 @@ pipeline {
 
 				echo '7'
                     // Register the task definition in the repository
-//				    sh "aws ecs register-task-definition --family ${FAMILY} --cli-input-json file://${WORKSPACE}/${CONTAINERNAME}-${TAGVERSION}.json --region ${REGION}"
+				    sh "aws ecs register-task-definition --family ${FAMILY} --cli-input-json file://${WORKSPACE}/${CONTAINERNAME}-${TAGVERSION}.json --region ${REGION}"
 
 				    def SERVICES= sh returnStdout: true, script:"aws ecs describe-services --services ${SERVICE_NAME} --cluster ${CLUSTER} --region ${REGION} | jq .failures[] | tr -d '\n'"
 					echo " Services: ${SERVICES}" + "<"
@@ -96,12 +127,12 @@ pipeline {
 					    	DESIRED_COUNT="1"
 				    	}
 						echo "Update existing service"
-//						sh "aws ecs update-service --cluster ${CLUSTER} --region ${REGION} --service ${SERVICE_NAME} --task-definition ${FAMILY}:${REVISION} --desired-count ${DESIRED_COUNT}"
+						sh "aws ecs update-service --cluster ${CLUSTER} --region ${REGION} --service ${SERVICE_NAME} --task-definition ${FAMILY}:${REVISION} --desired-count ${DESIRED_COUNT}"
 				    
 					} else {      
 					
 				    	echo "Create new service"
-//				    	sh "aws ecs create-service --service-name ${SERVICE_NAME} --desired-count 1 --task-definition ${FAMILY} --cluster ${CLUSTER} --region ${REGION}"
+				    	sh "aws ecs create-service --service-name ${SERVICE_NAME} --desired-count 1 --task-definition ${FAMILY} --cluster ${CLUSTER} --region ${REGION}"
 				    } 
 				}	
 			}
