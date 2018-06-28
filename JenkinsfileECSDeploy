@@ -15,16 +15,12 @@ pipeline {
 		// These parameters need to be updated for each new project.
 		//
 		
-		// Jenkins setup  
-//		workingJob= 'TestPipelineECSDeploy'   
-//		workingProject= 'SpringPOC'
-//		workingJenkinsDir= '/var/lib/jenkins/workspace'
 		
 		// Docker
-		workingImageName='springpoc'
+//		workingImageName='springpoc'
 		
 		// email 
-		workingEmailRecipients = 'randy.duart@dhcs.ca.gov'
+		workingEmailRecipients = 'DHCSJenkinGroup@dhcs.ca.gov'
 		
 		// 
 		failedMessage = 'test message'
@@ -111,7 +107,7 @@ pipeline {
 			}
 			post {
 				always {
-					echo 'Docker Build'
+					echo 'ECS Deploy'
 				}
 				failure {
 					script {
@@ -121,7 +117,7 @@ pipeline {
 					}
 				}
 				success {
-					echo 'Success Docker Build'
+					echo 'Success ECS Deploy'
 				}
 			}
 		}
