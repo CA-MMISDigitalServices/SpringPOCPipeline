@@ -76,9 +76,9 @@ pipeline {
                     // Replace the variables in in the taskdef.json file.
 			    	sh "sed -e 's;%BUILD_NUMBER%;${TAGVERSION};g' -e 's;%REPOSITORY_URI%;${REPOSITORY_URI};g' -e 's;%FAMILY%;${FAMILY};g' -e 's;%NAME%;${CONTAINERNAME};g' -e 's;%CONTAINERPORT%;${CONTAINERPORT};g' -e 's;%HOSTPORT%;${HOSTPORT};g' taskdef.json > ${NAME}-${tagVersion}.json"
 
-/*				echo '7'
+				echo '7'
                     // Register the task definition in the repository
-				    sh "aws ecs register-task-definition --family ${FAMILY} --cli-input-json file://${WORKSPACE}/${CONTAINERNAME}-${TAGVERSION}.json --region ${REGION}"
+//				    sh "aws ecs register-task-definition --family ${FAMILY} --cli-input-json file://${WORKSPACE}/${CONTAINERNAME}-${TAGVERSION}.json --region ${REGION}"
 
 				    def SERVICES= sh returnStdout: true, script:"aws ecs describe-services --services ${SERVICE_NAME} --cluster ${CLUSTER} --region ${REGION} | jq .failures[] | tr -d '\n'"
 					echo " Services: ${SERVICES}" + "<"
@@ -99,14 +99,13 @@ pipeline {
 					    	DESIRED_COUNT="1"
 				    	}
 						echo "Update existing service"
-						sh "aws ecs update-service --cluster ${CLUSTER} --region ${REGION} --service ${SERVICE_NAME} --task-definition ${FAMILY}:${REVISION} --desired-count ${DESIRED_COUNT}"
+//						sh "aws ecs update-service --cluster ${CLUSTER} --region ${REGION} --service ${SERVICE_NAME} --task-definition ${FAMILY}:${REVISION} --desired-count ${DESIRED_COUNT}"
 				    
 					} else {      
 					
 				    	echo "Create new service"
-				    	sh "aws ecs create-service --service-name ${SERVICE_NAME} --desired-count 1 --task-definition ${FAMILY} --cluster ${CLUSTER} --region ${REGION}"
+//				    	sh "aws ecs create-service --service-name ${SERVICE_NAME} --desired-count 1 --task-definition ${FAMILY} --cluster ${CLUSTER} --region ${REGION}"
 				    } 
-					*/
 				}	
 			}
 			post {
